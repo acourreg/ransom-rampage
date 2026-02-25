@@ -1,0 +1,6 @@
+.env
+__pycache__/
+*.faiss
+*.pkl
+.DS_Store
+services/agent-service/faiss_indexes/
