@@ -1,0 +1,157 @@
+### Key Points
+- Research suggests that phishing and social engineering are among the most prevalent initial entry points for cyberattacks on financial services, often exploiting human factors rather than technical flaws, though robust training can mitigate risks.
+- Lateral movement techniques, such as credential reuse or token theft, commonly follow initial compromises, allowing attackers to escalate access; evidence leans toward this being a key enabler in many breaches, but network segmentation may reduce its effectiveness.
+- Ransomware deployment frequently targets servers and databases in finance, leading to encryption and potential downtime, with studies indicating a rise in such incidents despite improved defenses.
+- Data exfiltration from databases can trigger compliance obligations like GDPR notifications, highlighting the need for careful data handling; while not all cases result in immediate financial loss, the long-term reputation impact can be significant.
+- DDoS attacks are sometimes used as diversionary tactics to distract from other intrusions, though their direct impact on revenue varies; organizations with strong mitigation tools appear better positioned to handle them.
+- Insider threats via compromised employee accounts pose unique challenges, as they bypass external defenses; this underscores the importance of monitoring without assuming malice from all staff.
+- Supply chain attacks through vendors remain a growing concern in fintech, often amplifying risks across ecosystems; collaborative vendor assessments seem likely to help address this complexity.
+
+### Overview of Common Techniques
+Cyberattacks on financial services infrastructure often involve a mix of human-targeted and technical exploits. Phishing, for instance, tricks employees into providing access, setting the stage for deeper intrusions. Ransomware and data theft then exploit gained access to encrypt or steal sensitive information, while DDoS serves to overwhelm systems as a cover. Insider and supply chain threats add layers of risk by leveraging trusted relationships.
+
+### Understanding Attack Chains
+Many attacks follow a progression: starting with initial access via phishing or supply chain compromise, moving laterally through credential theft, and culminating in high-value actions like ransomware deployment or data exfiltration. This chain-like approach allows attackers to reach core assets such as payment engines or databases, emphasizing the value of layered defenses.
+
+---
+
+In the realm of financial services cybersecurity, adversaries employ a diverse array of techniques to compromise infrastructure, often chaining them together for maximum impact. These attacks target the sector's unique blend of high-value data, interconnected systems, and regulatory scrutiny. Below, we delve into the specified techniques, structured as requested, drawing from extensive research on real-world incidents and frameworks like MITRE ATT&CK. This comprehensive survey expands on the key points above, incorporating detailed analysis, attack chain progressions, and supporting evidence from authoritative sources.
+
+Each technique is examined individually, but they rarely occur in isolation. Attack chains typically begin with initial access (e.g., phishing or supply chain compromise), proceed to lateral movement (e.g., credential reuse), and target high-value assets like databases or payment engines. For example, a phishing email might grant entry to an employee's endpoint, enabling token theft for lateral spread to a database, where ransomware is deployed or data exfiltrated. MITRE ATT&CK mappings highlight relevant tactics and techniques, such as Initial Access (TA0001), Lateral Movement (TA0008), and Impact (TA0040).
+
+#### Technique: Phishing Targeting Employees
+- **Category**: compromise
+- **Prerequisites**: Access to employee email systems; weak or absent email filtering, anti-phishing tools, or multifactor authentication (MFA); lack of employee awareness training; often requires social engineering research on targets via public sources like LinkedIn.
+- **Target node types**: Human endpoint (e.g., employee devices), auth service (e.g., login portals).
+- **Resources affected on the victim**:
+  - Defense score of target node: Bypassed or degraded (e.g., email gateways fail to flag malicious links/attachments).
+  - Revenue flows: Partially disrupted if leads to account lockouts or downtime; total if escalates to broader compromise.
+  - Compliance: Potential breach notifications if personal data accessed later; may trigger GDPR timers if EU data involved.
+  - Reputation: High public impact if customer data exposed, leading to media scrutiny.
+  - Cash: Indirect loss through fraud or ransom if chained to theft.
+- **Detection difficulty**: Moderate; requires email monitoring, user reporting mechanisms, and behavioral analytics; advanced threats like AI-generated phishing increase difficulty without EDR tools.
+- **Real-world fintech incident**: Carbanak gang (2013-2018), targeted banks worldwide via phishing emails to employees, leading to over $1 billion in thefts (e.g., affecting Eastern European banks).
+
+MITRE ATT&CK: T1566 (Phishing), often under Initial Access tactic.
+
+#### Technique: Lateral Movement through Network (Credential Reuse, Token Theft)
+- **Category**: compromise
+- **Prerequisites**: Initial foothold (e.g., from phishing); reused or weak credentials across systems; no MFA on internal services; accessible network shares or unpatched vulnerabilities for exploitation.
+- **Target node types**: Middleware (e.g., internal servers), auth service, database.
+- **Resources affected on the victim**:
+  - Defense score of target node: Degraded (e.g., firewalls bypassed via valid credentials).
+  - Revenue flows: Partially disrupted during movement; total if reaches payment engines.
+  - Compliance: May delay detection, triggering regulatory audits post-incident.
+  - Reputation: Moderate if contained; high if leads to public breach.
+  - Cash: Indirect, enabling access to funds transfer systems.
+- **Detection difficulty**: High; needs network traffic monitoring, anomaly detection in logs, and SIEM for unusual access patterns; token theft often evades basic tools.
+- **Real-world fintech incident**: Capital One breach (2019), where a misconfigured server allowed initial access, followed by token theft for lateral movement to steal 100 million customer records.
+
+MITRE ATT&CK: T1078 (Valid Accounts), T1550 (Use Alternate Authentication Material), under Lateral Movement tactic.
+
+#### Technique: Ransomware Deployment on Servers and Databases
+- **Category**: encryption (ransomware)
+- **Prerequisites**: Lateral access to high-privilege nodes; unpatched vulnerabilities (e.g., EternalBlue); disabled backups or weak encryption; often follows credential theft.
+- **Target node types**: Database, middleware (e.g., application servers).
+- **Resources affected on the victim**:
+  - Defense score of target node: Bypassed (e.g., antivirus evaded via obfuscation).
+  - Revenue flows: Totally disrupted (e.g., transaction processing halted).
+  - Compliance: Triggers breach notifications; may violate data availability requirements.
+  - Reputation: High, especially if downtime publicized.
+  - Cash: Direct loss via ransom (average $1M+); operational costs.
+- **Detection difficulty**: Moderate to high; EDR/SIEM can spot encryption spikes, but stealthy variants require proactive hunting.
+- **Real-world fintech incident**: Conti ransomware on financial firms (2020-2022), e.g., attacking a U.S. bank subsidiary, encrypting databases and demanding multimillion ransoms.
+
+MITRE ATT&CK: T1486 (Data Encrypted for Impact), under Impact tactic.
+
+#### Technique: Data Exfiltration from Databases Triggering GDPR Obligations
+- **Category**: data theft
+- **Prerequisites**: Database access via lateral movement; weak data loss prevention (DLP) tools; no encryption at rest; regulatory exposure (e.g., EU operations).
+- **Target node types**: Database, API gateway.
+- **Resources affected on the victim**:
+  - Defense score of target node: Degraded (e.g., DLP bypassed).
+  - Revenue flows: Partially disrupted if detected early; indirect via fraud.
+  - Compliance: Triggers GDPR 72-hour notifications; potential fines.
+  - Reputation: Severe if customer data leaked.
+  - Cash: Direct via identity theft/fraud losses.
+- **Detection difficulty**: High; requires outbound traffic monitoring and anomaly detection; often unnoticed until external use.
+- **Real-world fintech incident**: Equifax breach (2017), exfiltrated 147 million records from databases, triggering massive GDPR-like obligations and $700M settlement.
+
+MITRE ATT&CK: T1048 (Exfiltration Over Alternative Protocol), under Exfiltration tactic.
+
+#### Technique: DDoS as Diversionary Tactic
+- **Category**: disruption (DDoS)
+- **Prerequisites**: Botnet access; public-facing services (e.g., websites); limited mitigation like CDN; often paired with other attacks.
+- **Target node types**: API gateway, auth service.
+- **Resources affected on the victim**:
+  - Defense score of target node: Degraded (e.g., overload bypasses filters).
+  - Revenue flows: Totally disrupted (e.g., online banking unavailable).
+  - Compliance: May trigger reporting if prolonged.
+  - Reputation: High, visible to customers.
+  - Cash: Indirect via lost transactions.
+- **Detection difficulty**: Low to moderate; traffic spikes visible with monitoring, but distinguishing from legitimate surges needs analytics.
+- **Real-world fintech incident**: Operation Ababil (2012-2013), DDoS on U.S. banks (e.g., Bank of America) as diversion for wire fraud attempts.
+
+MITRE ATT&CK: T1499 (Endpoint Denial of Service), under Impact tactic.
+
+#### Technique: Insider Threats from Compromised Employee Accounts
+- **Category**: compromise
+- **Prerequisites**: Compromised credentials (e.g., via phishing); insider access privileges; poor monitoring of internal activity.
+- **Target node types**: Human endpoint, database, vendor integrations.
+- **Resources affected on the victim**:
+  - Defense score of target node: Bypassed (uses legitimate access).
+  - Revenue flows: Partially to totally disrupted if funds transferred.
+  - Compliance: Internal breach reporting required.
+  - Reputation: High if fraud exposed.
+  - Cash: Direct theft possible.
+- **Detection difficulty**: High; behavioral analytics needed to spot anomalies in trusted accounts.
+- **Real-world fintech incident**: Cash App breach (2022), former employee exfiltrated 8.2 million customer records.
+
+MITRE ATT&CK: T1078 (Valid Accounts), under Persistence and Privilege Escalation tactics.
+
+#### Technique: Supply Chain Attacks via Vendor Nodes
+- **Category**: compromise
+- **Prerequisites**: Vulnerable vendor software; trusted third-party access; lack of vendor risk assessments.
+- **Target node types**: Vendor, middleware, API gateway.
+- **Resources affected on the victim**:
+  - Defense score of target node: Bypassed via trusted channel.
+  - Revenue flows: Totally disrupted if core services affected.
+  - Compliance: Cascading notifications.
+  - Reputation: Shared blame, high impact.
+  - Cash: Indirect via downtime or theft.
+- **Detection difficulty**: High; requires supply chain monitoring and code audits.
+- **Real-world fintech incident**: MOVEit breach (2023), affected banks like Wells Fargo, exfiltrating customer data via file transfer software.
+
+MITRE ATT&CK: T1195 (Supply Chain Compromise), under Initial Access tactic.
+
+### Summary Table of Techniques and Attack Chain Integration
+
+| Technique | Category | Key Prerequisites | Primary Targets | Detection Difficulty | MITRE ATT&CK Ref | Example Incident |
+|-----------|----------|-------------------|-----------------|----------------------|------------------|------------------|
+| Phishing Targeting Employees | Compromise | Weak email filters, no MFA | Human endpoint, auth service | Moderate | T1566 | Carbanak (2013-2018) |
+| Lateral Movement (Credential Reuse/Token Theft) | Compromise | Initial access, weak creds | Middleware, database | High | T1078, T1550 | Capital One (2019) |
+| Ransomware Deployment | Encryption | Lateral access, unpatched vulns | Database, servers | Moderate-High | T1486 | Conti (2020-2022) |
+| Data Exfiltration | Data Theft | Database access, weak DLP | Database, API | High | T1048 | Equifax (2017) |
+| DDoS as Diversionary | Disruption | Botnet, public services | API gateway | Low-Moderate | T1499 | Operation Ababil (2012-2013) |
+| Insider Threats | Compromise | Compromised accounts | Human endpoint, database | High | T1078 | Cash App (2022) |
+| Supply Chain Attacks | Compromise | Vulnerable vendors | Vendor, middleware | High | T1195 | MOVEit (2023) |
+
+This table illustrates how techniques interconnect in chains: e.g., phishing enables lateral movement, leading to ransomware or exfiltration. Financial services face amplified risks due to interconnected vendors and high-stakes data, with reports showing a 27% breach rate in fintech. Defenses like zero-trust architecture and regular audits can break these chains.
+
+### Deeper Analysis of Attack Chains
+Attack chains in financial services often mirror the Cyber Kill Chain model, adapted to MITRE ATT&CK. Initial access via phishing (T1566) or supply chain (T1195) exploits entry points like employee emails or vendor software. From there, lateral movement (TA0008) uses stolen tokens (T1550) to hop from human endpoints to middleware, reaching core databases. High-value targets, such as payment engines, are then hit with impact techniques like encryption (T1486) or theft (T1657). Diversionary DDoS (T1499) may mask this, drawing resources away. Real chains: In the Bangladesh Bank heist (2016), phishing led to credential compromise, lateral to SWIFT systems, and $81M theft. Supply chain examples like SolarWinds (2020) show vendor compromise enabling widespread lateral access in finance firms.
+
+Trends indicate rising AI-enhanced phishing and RaaS models, with average breach costs at $5.9M in fintech. Countermeasures include MITRE-aligned defenses, like mapping controls to techniques for proactive threat hunting.
+
+### Key Citations
+- [Types of Cyberattacks on Financial Institutions](https://www.fortinet.com/solutions/industries/financial-services/types-of-cyberattacks-on-financial-institutions)
+- [Financial services cybersecurity explained: Threats and defenses](https://www.vectra.ai/topics/financial-services-cybersecurity)
+- [Information Technology (IT) and Cybersecurity](https://www.fdic.gov/banker-resource-center/information-technology-it-and-cybersecurity)
+- [The Global Cyber Threat to Financial Systems](https://www.imf.org/external/pubs/ft/fandd/2021/03/global-cyber-threat-to-financial-systems-maurer.htm)
+- [Five Biggest Data Breaches in Financial Service History: Lessons to Be Learnt](https://www.6dg.co.uk/blog/biggest-data-breaches-financial-services)
+- [Fintech Breach Statistics 2025: $7B Crypto Losses](https://deepstrike.io/blog/fintech-breach-statistics-2025)
+- [11 Biggest Cybersecurity Attacks in History](https://www.cobalt.io/blog/biggest-cybersecurity-attacks-in-history)
+- [5 Real-Life Examples of Data Breaches Caused by Insider Threats](https://www.grcilaw.com/blog/5-real-life-examples-of-data-breaches-caused-by-insider-threats)
+- [The 5 Biggest Cyber Threats for Financial Services](https://www.offsec.com/blog/finance-under-siege)
+- [Top 15 software supply chain attacks: Case studies](https://outshift.cisco.com/blog/top-10-supply-chain-attacks)
+- [What Is Ransomware? | IBM](https://www.ibm.com/topics/ransomware)
