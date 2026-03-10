@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ransom Rampage — CTO Dashboard v2</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-void: #07090D;
+            --bg-panel: #0D1117;
+            --bg-card: #161B22;
+            --bg-card-hover: #1C2333;
+            --border: #21262D;
+            --border-active: #30363D;
+
+            --text-primary: #E6EDF3;
+            --text-secondary: #7D8590;
+            --text-muted: #484F58;
+
+            --green: #3FB950;
+            --green-dim: rgba(63,185,80,0.15);
+            --red: #F85149;
+            --red-dim: rgba(248,81,73,0.15);
+            --amber: #D29922;
+            --amber-dim: rgba(210,153,34,0.15);
+            --blue: #58A6FF;
+            --blue-dim: rgba(88,166,255,0.12);
+            --purple: #BC8CFF;
+            --purple-dim: rgba(188,140,255,0.12);
+            --cyan: #39D353;
+
+            --font-display: 'Outfit', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+
+            --radius: 6px;
+            --radius-lg: 10px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: var(--font-display);
+            background: var(--bg-void);
+            color: var(--text-primary);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ── TOP BAR ─────────────────────────────── */
+        .topbar {
+            height: 52px;
+            background: var(--bg-panel);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            gap: 6px;
+            z-index: 10;
+        }
+        .topbar-brand {
+            font-weight: 800;
+            font-size: 0.95rem;
+            letter-spacing: -0.5px;
+            color: var(--red);
+            margin-right: 24px;
+            text-transform: uppercase;
+        }
+        .topbar-brand span { color: var(--text-muted); font-weight: 400; }
+
+        .stat-pill {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 5px 14px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 100px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .stat-pill .label { color: var(--text-muted); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px; }
+        .stat-pill .val { font-family: var(--font-mono); font-size: 0.85rem; }
+        .stat-pill.cash .val { color: var(--green); }
+        .stat-pill.compliance .val { color: var(--amber); }
+        .stat-pill.reputation .val { color: var(--blue); }
+
+        .turn-pill {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 5px 14px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 100px;
+        }
+        .turn-pill .turn-label {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.3px;
+        }
+        .turn-pill .act-label {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .turn-track {
+            width: 100px;
+            height: 4px;
+            background: var(--border);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        .turn-track-fill {
+            height: 100%;
+            width: 60%;
+            background: linear-gradient(90deg, var(--blue), var(--purple));
+            border-radius: 2px;
+        }
+
+        /* ── MAIN LAYOUT ────────────────────────── */
+        .main {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 280px 1fr 340px;
+            overflow: hidden;
+        }
+
+        /* ── PANELS (shared) ────────────────────── */
+        .panel {
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background: var(--bg-panel);
+        }
+        .panel-left { border-right: 1px solid var(--border); }
+        .panel-right { border-left: 1px solid var(--border); }
+
+        .panel-tab-bar {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-panel);
+            flex-shrink: 0;
+        }
+        .panel-tab {
+            flex: 1;
+            padding: 10px 12px;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--text-muted);
+            text-align: center;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.15s;
+            font-weight: 600;
+        }
+        .panel-tab:hover { color: var(--text-secondary); }
+        .panel-tab.active {
+            color: var(--text-primary);
+            border-bottom-color: var(--blue);
+        }
+
+        .panel-scroll {
+            flex: 1;
+            overflow-y: auto;
+            padding: 14px;
+        }
+        .panel-scroll::-webkit-scrollbar { width: 4px; }
+        .panel-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+        .section-label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+        .section-label:not(:first-child) { margin-top: 18px; }
+
+        /* ── LEFT: STATUS PANEL ─────────────────── */
+        .info-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 10px 12px;
+            margin-bottom: 8px;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.82rem;
+            padding: 3px 0;
+        }
+        .info-row .k { color: var(--text-secondary); }
+        .info-row .v { font-family: var(--font-mono); font-weight: 700; font-size: 0.8rem; }
+
+        /* Revenue Flows */
+        .flow-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 10px 12px;
+            margin-bottom: 6px;
+            border-left: 3px solid var(--green);
+        }
+        .flow-card.throttled { border-left-color: var(--amber); }
+        .flow-card.dead { border-left-color: var(--red); }
+
+        .flow-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+        .flow-name { font-size: 0.82rem; font-weight: 600; }
+        .flow-badge {
+            font-size: 0.6rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+        .flow-badge.ok { background: var(--green-dim); color: var(--green); }
+        .flow-badge.warn { background: var(--amber-dim); color: var(--amber); }
+        .flow-badge.dead { background: var(--red-dim); color: var(--red); }
+
+        .flow-bar-track {
+            height: 3px;
+            background: var(--border);
+            border-radius: 2px;
+            margin-top: 6px;
+        }
+        .flow-bar-fill { height: 100%; border-radius: 2px; }
+
+        .flow-revenue {
+            display: flex;
+            justify-content: space-between;
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        /* Node Details */
+        .node-detail-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        .node-detail-name {
+            font-weight: 700;
+            font-size: 1rem;
+        }
+        .node-status-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: var(--green);
+        }
+        .node-status-dot.compromised { background: var(--red); animation: pulse-red 1.5s infinite; }
+        .node-status-dot.throttled { background: var(--amber); }
+
+        @keyframes pulse-red {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(248,81,73,0.4); }
+            50% { box-shadow: 0 0 0 6px rgba(248,81,73,0); }
+        }
+
+        .char-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4px;
+        }
+        .char-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.72rem;
+            padding: 4px 6px;
+            background: var(--bg-card);
+            border-radius: 3px;
+        }
+        .char-item .char-name { color: var(--text-secondary); }
+        .char-item .char-val {
+            font-family: var(--font-mono);
+            font-weight: 700;
+            font-size: 0.7rem;
+        }
+        .char-val.high { color: var(--green); }
+        .char-val.mid { color: var(--amber); }
+        .char-val.low { color: var(--red); }
+
+        /* ── CENTER: MAP ────────────────────────── */
+        .map-area {
+            position: relative;
+            background:
+                radial-gradient(circle at 30% 40%, rgba(88,166,255,0.03) 0%, transparent 50%),
+                radial-gradient(circle at 70% 60%, rgba(248,81,73,0.03) 0%, transparent 50%),
+                var(--bg-void);
+            overflow: hidden;
+        }
+        /* Grid pattern */
+        .map-area::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(var(--border) 1px, transparent 1px),
+                linear-gradient(90deg, var(--border) 1px, transparent 1px);
+            background-size: 60px 60px;
+            opacity: 0.15;
+        }
+
+        /* Mock nodes */
+        .m-node {
+            position: absolute;
+            padding: 8px 14px;
+            background: var(--bg-panel);
+            border: 1.5px solid var(--blue);
+            border-radius: var(--radius);
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            z-index: 3;
+            transition: all 0.15s;
+            box-shadow: 0 0 12px rgba(88,166,255,0.1);
+        }
+        .m-node:hover {
+            background: var(--bg-card-hover);
+            box-shadow: 0 0 20px rgba(88,166,255,0.25);
+            transform: scale(1.05);
+        }
+        .m-node.selected {
+            border-color: var(--text-primary);
+            box-shadow: 0 0 20px rgba(230,237,243,0.15);
+            background: var(--bg-card-hover);
+        }
+        .m-node.compromised {
+            border-color: var(--red);
+            box-shadow: 0 0 18px rgba(248,81,73,0.25);
+            animation: pulse-border 2s infinite;
+        }
+        .m-node.throttled { border-color: var(--amber); box-shadow: 0 0 12px rgba(210,153,34,0.15); }
+        .m-node.fogged { opacity: 0.35; border-style: dashed; }
+
+        .m-node-sub {
+            font-size: 0.6rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        @keyframes pulse-border {
+            0%, 100% { box-shadow: 0 0 18px rgba(248,81,73,0.25); }
+            50% { box-shadow: 0 0 28px rgba(248,81,73,0.45); }
+        }
+
+        /* Mock edges (SVG-like with CSS) */
+        .m-edge {
+            position: absolute;
+            height: 1.5px;
+            background: var(--blue);
+            opacity: 0.3;
+            z-index: 1;
+            transform-origin: 0 50%;
+        }
+        .m-edge.danger { background: var(--red); opacity: 0.5; }
+        .m-edge.warn { background: var(--amber); opacity: 0.4; }
+
+        /* Revenue flow path highlight */
+        .flow-path {
+            position: absolute;
+            height: 2px;
+            z-index: 2;
+            opacity: 0;
+            transform-origin: 0 50%;
+        }
+        .flow-path.visible {
+            opacity: 0.6;
+            background: var(--green);
+            box-shadow: 0 0 6px var(--green);
+        }
+
+        /* Byte indicator */
+        .byte-indicator {
+            position: absolute;
+            z-index: 5;
+            font-size: 1.4rem;
+            filter: drop-shadow(0 0 8px rgba(248,81,73,0.6));
+            animation: byte-float 3s ease-in-out infinite;
+        }
+        @keyframes byte-float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        /* Map overlay: event log ticker */
+        .log-ticker {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(7,9,13,0.95));
+            padding: 40px 16px 12px;
+            z-index: 4;
+        }
+        .log-line {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-bottom: 3px;
+        }
+        .log-line .tag { font-weight: 700; }
+        .log-line .tag.alert { color: var(--red); }
+        .log-line .tag.warn { color: var(--amber); }
+        .log-line .tag.info { color: var(--blue); }
+        .log-line .tag.audit { color: var(--purple); }
+
+        /* ── RIGHT: DECISIONS PANEL ─────────────── */
+
+        /* War Room messages */
+        .msg {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        .msg-avatar {
+            width: 28px; height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        .msg-avatar.ciso { background: var(--red-dim); color: var(--red); border: 1px solid rgba(248,81,73,0.3); }
+        .msg-avatar.sre { background: var(--blue-dim); color: var(--blue); border: 1px solid rgba(88,166,255,0.3); }
+        .msg-avatar.legal { background: var(--amber-dim); color: var(--amber); border: 1px solid rgba(210,153,34,0.3); }
+        .msg-avatar.auditor { background: var(--purple-dim); color: var(--purple); border: 1px solid rgba(188,140,255,0.3); }
+        .msg-avatar.byte { background: var(--red-dim); color: var(--red); border: 1px solid rgba(248,81,73,0.3); }
+        .msg-avatar.reg { background: var(--amber-dim); color: var(--amber); border: 1px solid rgba(210,153,34,0.3); }
+
+        .msg-body {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 8px 10px;
+            font-size: 0.78rem;
+            line-height: 1.4;
+            flex: 1;
+        }
+        .msg-sender {
+            font-weight: 700;
+            font-size: 0.68rem;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            margin-bottom: 3px;
+            display: block;
+        }
+
+        /* Advisor recommendation buttons */
+        .adv-btn {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 10px 12px;
+            margin-bottom: 6px;
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: all 0.15s;
+            text-align: left;
+            position: relative;
+            overflow: hidden;
+            gap: 10px;
+        }
+        .adv-btn::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            width: 3px;
+        }
+        .adv-btn:hover {
+            background: var(--bg-card-hover);
+            border-color: var(--border-active);
+            transform: translateX(2px);
+        }
+        .adv-btn .icon { font-size: 1.2rem; flex-shrink: 0; }
+        .adv-btn .content { flex: 1; min-width: 0; }
+        .adv-btn .title { font-weight: 700; font-size: 0.78rem; display: block; margin-bottom: 2px; }
+        .adv-btn .desc { font-size: 0.68rem; color: var(--text-secondary); display: block; }
+        .adv-btn .cost {
+            font-family: var(--font-mono);
+            font-weight: 700;
+            font-size: 0.75rem;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .adv-btn.ciso::before { background: var(--red); }
+        .adv-btn.ciso:hover { border-color: rgba(248,81,73,0.4); }
+        .adv-btn.ciso .title { color: var(--red); }
+        .adv-btn.ciso .cost { color: var(--red); }
+
+        .adv-btn.sre::before { background: var(--blue); }
+        .adv-btn.sre:hover { border-color: rgba(88,166,255,0.4); }
+        .adv-btn.sre .title { color: var(--blue); }
+        .adv-btn.sre .cost { color: var(--blue); }
+
+        .adv-btn.legal::before { background: var(--amber); }
+        .adv-btn.legal:hover { border-color: rgba(210,153,34,0.4); }
+        .adv-btn.legal .title { color: var(--amber); }
+        .adv-btn.legal .cost { color: var(--amber); }
+
+        .adv-btn.auditor::before { background: var(--purple); }
+        .adv-btn.auditor:hover { border-color: rgba(188,140,255,0.4); }
+        .adv-btn.auditor .title { color: var(--purple); }
+        .adv-btn.auditor .cost { color: var(--purple); }
+
+        /* CTO global actions */
+        .cto-btn {
+            width: 100%;
+            padding: 7px 10px;
+            margin-bottom: 4px;
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            border-radius: var(--radius);
+            cursor: pointer;
+            text-align: left;
+            font-size: 0.75rem;
+            font-family: var(--font-display);
+            font-weight: 500;
+            transition: all 0.15s;
+        }
+        .cto-btn:hover {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            border-color: var(--border-active);
+        }
+
+        /* ── EXECUTE TURN BUTTON ────────────────── */
+        .execute-zone {
+            flex-shrink: 0;
+            padding: 12px 14px;
+            background: var(--bg-panel);
+            border-top: 1px solid var(--border);
+        }
+        .execute-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #1a5c2e, #0d3d1e);
+            border: 1px solid var(--green);
+            border-radius: var(--radius-lg);
+            color: var(--green);
+            font-family: var(--font-display);
+            font-size: 0.95rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+        .execute-btn:hover {
+            background: linear-gradient(135deg, #22753a, #145228);
+            box-shadow: 0 0 30px rgba(63,185,80,0.2), inset 0 0 20px rgba(63,185,80,0.05);
+            transform: translateY(-1px);
+        }
+        .execute-btn:active { transform: translateY(0); }
+        .execute-btn .sub {
+            display: block;
+            font-size: 0.6rem;
+            font-weight: 400;
+            letter-spacing: 0.5px;
+            color: rgba(63,185,80,0.6);
+            margin-top: 2px;
+        }
+
+        .skip-btn {
+            width: 100%;
+            padding: 8px;
+            margin-top: 6px;
+            background: transparent;
+            border: 1px dashed var(--border);
+            border-radius: var(--radius);
+            color: var(--text-muted);
+            font-family: var(--font-display);
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .skip-btn:hover {
+            border-color: var(--red);
+            color: var(--red);
+            border-style: solid;
+        }
+
+        /* ── TIMER WARNING ──────────────────────── */
+        .timer-bar {
+            background: var(--red-dim);
+            border: 1px solid rgba(248,81,73,0.3);
+            border-radius: var(--radius);
+            padding: 8px 10px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.75rem;
+            animation: timer-pulse 2s infinite;
+        }
+        @keyframes timer-pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        .timer-bar .timer-icon { font-size: 1rem; }
+        .timer-bar .timer-text { flex: 1; color: var(--red); font-weight: 600; }
+        .timer-bar .timer-countdown {
+            font-family: var(--font-mono);
+            font-weight: 700;
+            color: var(--red);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ═══ TOP BAR ═══ -->
+    <header class="topbar">
+        <div class="topbar-brand">Ransom Rampage <span>v3</span></div>
+
+        <div class="stat-pill cash">
+            <span class="label">Cash</span>
+            <span class="val">€4,350K</span>
+        </div>
+        <div class="stat-pill compliance">
+            <span class="label">Compliance</span>
+            <span class="val">72%</span>
+        </div>
+        <div class="stat-pill reputation">
+            <span class="label">Reputation</span>
+            <span class="val">88%</span>
+        </div>
+
+        <div class="turn-pill">
+            <div>
+                <div class="turn-label">Turn 12 / 20</div>
+                <div class="act-label">Act 2 — Crisis</div>
+            </div>
+            <div class="turn-track"><div class="turn-track-fill"></div></div>
+        </div>
+    </header>
+
+    <!-- ═══ MAIN 3-COL LAYOUT ═══ -->
+    <main class="main">
+
+        <!-- ── LEFT PANEL: STATUS & NODE DETAILS ── -->
+        <aside class="panel panel-left">
+            <div class="panel-tab-bar">
+                <div class="panel-tab active">📊 Status</div>
+                <div class="panel-tab">🔍 Node Detail</div>
+            </div>
+
+            <!-- Tab 1: Company + Revenue Flows -->
+            <div class="panel-scroll" id="status-view">
+
+                <div class="section-label">Company</div>
+                <div class="info-card">
+                    <div class="info-row">
+                        <span class="k">Sector</span>
+                        <span class="v" style="color:var(--text-primary)">NeoBank</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="k">Revenue / turn</span>
+                        <span class="v" style="color:var(--green)">+€70K</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="k">Burn rate</span>
+                        <span class="v" style="color:var(--red)">-€120K</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="k">Net / turn</span>
+                        <span class="v" style="color:var(--red)">-€50K</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="k">Active threats</span>
+                        <span class="v" style="color:var(--red)">2</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="k">Adversary</span>
+                        <span class="v" style="color:var(--red)">Mafia</span>
+                    </div>
+                </div>
+
+                <div class="section-label">Revenue Flows</div>
+
+                <div class="flow-card throttled">
+                    <div class="flow-header">
+                        <span class="flow-name">💳 Paiements</span>
+                        <span class="flow-badge warn">Throttled</span>
+                    </div>
+                    <div class="flow-bar-track">
+                        <div class="flow-bar-fill" style="width:75%; background:var(--amber);"></div>
+                    </div>
+                    <div class="flow-revenue">
+                        <span>Bottleneck: Payment Engine</span>
+                        <span style="color:var(--amber)">€30K / €40K</span>
+                    </div>
+                </div>
+
+                <div class="flow-card">
+                    <div class="flow-header">
+                        <span class="flow-name">🏦 Lending</span>
+                        <span class="flow-badge ok">Optimal</span>
+                    </div>
+                    <div class="flow-bar-track">
+                        <div class="flow-bar-fill" style="width:100%; background:var(--green);"></div>
+                    </div>
+                    <div class="flow-revenue">
+                        <span>All nodes healthy</span>
+                        <span style="color:var(--green)">€25K / €25K</span>
+                    </div>
+                </div>
+
+                <div class="flow-card dead">
+                    <div class="flow-header">
+                        <span class="flow-name">📊 Analytics</span>
+                        <span class="flow-badge dead">Down</span>
+                    </div>
+                    <div class="flow-bar-track">
+                        <div class="flow-bar-fill" style="width:0%;"></div>
+                    </div>
+                    <div class="flow-revenue">
+                        <span>Vendor Cloud isolated</span>
+                        <span style="color:var(--red)">€0 / €15K</span>
+                    </div>
+                </div>
+
+                <div class="section-label">Active Timers</div>
+                <div class="timer-bar">
+                    <span class="timer-icon">⏰</span>
+                    <span class="timer-text">GDPR 72h Breach Notification</span>
+                    <span class="timer-countdown">1 turn left</span>
+                </div>
+
+                <!-- Hidden by default: Node detail (Tab 2) -->
+                <div id="node-detail-view" style="display:none;">
+                    <div class="node-detail-header">
+                        <div class="node-status-dot compromised"></div>
+                        <span class="node-detail-name">Vendor Cloud</span>
+                        <span class="flow-badge dead" style="margin-left:auto">Compromised</span>
+                    </div>
+                    <div class="section-label">10 Characteristics</div>
+                    <div class="char-grid">
+                        <div class="char-item"><span class="char-name">Throughput</span><span class="char-val mid">6</span></div>
+                        <div class="char-item"><span class="char-name">Cost</span><span class="char-val mid">5</span></div>
+                        <div class="char-item"><span class="char-name">Latency</span><span class="char-val high">3</span></div>
+                        <div class="char-item"><span class="char-name">Resilience</span><span class="char-val low">2</span></div>
+                        <div class="char-item"><span class="char-name">Scalability</span><span class="char-val mid">5</span></div>
+                        <div class="char-item"><span class="char-name">Attack Surf.</span><span class="char-val low">8</span></div>
+                        <div class="char-item"><span class="char-name">Auditability</span><span class="char-val low">3</span></div>
+                        <div class="char-item"><span class="char-name">Compliance</span><span class="char-val mid">4</span></div>
+                        <div class="char-item"><span class="char-name">Complexity</span><span class="char-val low">7</span></div>
+                        <div class="char-item"><span class="char-name">Portability</span><span class="char-val low">2</span></div>
+                    </div>
+                    <div class="section-label">Flows through this node</div>
+                    <div style="font-size:0.78rem; color:var(--text-secondary); margin-bottom:4px;">📊 Analytics (€15K) — <span style="color:var(--red)">DOWN</span></div>
+                    <div style="font-size:0.78rem; color:var(--text-secondary);">🏦 Lending (€25K) — <span style="color:var(--green)">OK</span></div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- ── CENTER: INFRASTRUCTURE MAP ── -->
+        <section class="map-area">
+            <!-- Mock edges -->
+            <div class="m-edge" style="width:130px; top:135px; left:145px; transform:rotate(12deg);"></div>
+            <div class="m-edge warn" style="width:150px; top:195px; left:280px; transform:rotate(-8deg);"></div>
+            <div class="m-edge" style="width:120px; top:265px; left:165px; transform:rotate(35deg);"></div>
+            <div class="m-edge" style="width:170px; top:230px; left:420px; transform:rotate(-20deg);"></div>
+            <div class="m-edge danger" style="width:130px; top:155px; left:520px; transform:rotate(25deg);"></div>
+            <div class="m-edge" style="width:100px; top:350px; left:300px; transform:rotate(-30deg);"></div>
+            <div class="m-edge" style="width:140px; top:320px; left:470px; transform:rotate(10deg);"></div>
+
+            <!-- Mock nodes -->
+            <div class="m-node" style="top:100px; left:80px;">
+                🌐 API Gateway
+                <div class="m-node-sub">Entry point</div>
+            </div>
+            <div class="m-node" style="top:160px; left:260px;">
+                🔑 Auth Service
+                <div class="m-node-sub">MFA enabled</div>
+            </div>
+            <div class="m-node throttled" style="top:250px; left:120px;">
+                💳 Payment Engine
+                <div class="m-node-sub" style="color:var(--amber)">⚠ Throttled</div>
+            </div>
+            <div class="m-node selected" style="top:220px; left:430px;">
+                🗄️ Core DB
+                <div class="m-node-sub">4 flows depend on this</div>
+            </div>
+            <div class="m-node compromised" style="top:110px; left:560px;">
+                ☁️ Vendor Cloud
+                <div class="m-node-sub" style="color:var(--red)">☠ Compromised T9</div>
+            </div>
+            <div class="m-node" style="top:330px; left:280px;">
+                📊 Analytics
+                <div class="m-node-sub">Isolated</div>
+            </div>
+            <div class="m-node fogged" style="top:330px; left:510px;">
+                👤 Employee HR
+                <div class="m-node-sub">???</div>
+            </div>
+            <div class="m-node" style="top:400px; left:130px;">
+                📋 Compliance Rpt
+                <div class="m-node-sub">Healthy</div>
+            </div>
+
+            <!-- Byte position -->
+            <div class="byte-indicator" style="top:85px; left:600px;">👹</div>
+
+            <!-- Log ticker overlay -->
+            <div class="log-ticker">
+                <div class="log-line"><span class="tag alert">[ALERT]</span> Anomalous outbound traffic on Vendor Cloud — 2.3GB exfiltrated</div>
+                <div class="log-line"><span class="tag warn">[DORA]</span> Breach notification deadline: 1 turn remaining</div>
+                <div class="log-line"><span class="tag info">[FLINK]</span> Revenue Flow recalc: Paiements throttled at 75% (Payment Engine bottleneck)</div>
+                <div class="log-line"><span class="tag audit">[AUDIT]</span> Segment A scan complete — 2 nodes verified, 1 fogged</div>
+            </div>
+        </section>
+
+        <!-- ── RIGHT PANEL: DECISIONS ── -->
+        <aside class="panel panel-right">
+            <div class="panel-tab-bar">
+                <div class="panel-tab active">⚔️ Decisions</div>
+                <div class="panel-tab">💬 War Room</div>
+            </div>
+
+            <div class="panel-scroll">
+
+                <!-- Active timer warning (repeated here for visibility) -->
+                <div class="timer-bar">
+                    <span class="timer-icon">⚠️</span>
+                    <span class="timer-text">Report breach NOW or face €2M fine</span>
+                    <span class="timer-countdown">1T</span>
+                </div>
+
+                <div class="section-label">Advisor Recommendations</div>
+
+                <button class="adv-btn ciso">
+                    <span class="icon">🛡️</span>
+                    <div class="content">
+                        <span class="title">Isolate Vendor Cloud</span>
+                        <span class="desc">Cuts Byte's path. Kills Analytics flow (€15K/turn).</span>
+                    </div>
+                    <span class="cost">€150K</span>
+                </button>
+
+                <button class="adv-btn sre">
+                    <span class="icon">⚡</span>
+                    <div class="content">
+                        <span class="title">Scale-up Payment Engine</span>
+                        <span class="desc">Fix throttle → Paiements flow back to €40K. Recurring €30K/turn.</span>
+                    </div>
+                    <span class="cost">€30K/t</span>
+                </button>
+
+                <button class="adv-btn legal">
+                    <span class="icon">⚖️</span>
+                    <div class="content">
+                        <span class="title">Prepare Regulator Report</span>
+                        <span class="desc">Enables breach report next turn with 80% fine reduction.</span>
+                    </div>
+                    <span class="cost">€20K</span>
+                </button>
+
+                <button class="adv-btn auditor">
+                    <span class="icon">🔍</span>
+                    <div class="content">
+                        <span class="title">Audit Employee HR Node</span>
+                        <span class="desc">Clear fog — verify if compromised. Auditability: unknown.</span>
+                    </div>
+                    <span class="cost">€20K</span>
+                </button>
+
+                <div class="section-label">CTO Direct Actions</div>
+
+                <button class="cto-btn">📢 Report Breach to Regulator — €30K</button>
+                <button class="cto-btn">🔐 Impose MFA on HR Node — €45K</button>
+                <button class="cto-btn">🩹 Emergency Patch Vendor Cloud — €80K</button>
+                <button class="cto-btn">💰 Pay Ransom (if encrypted) — €???</button>
+                <button class="cto-btn">🔄 Reset HR Credentials — €15K</button>
+                <button class="cto-btn">🛡️ Subscribe Cyber Insurance — €65K + €15K/t</button>
+
+            </div>
+
+            <!-- EXECUTE TURN — always visible at bottom -->
+            <div class="execute-zone">
+                <button class="execute-btn">
+                    ▶ Execute Turn 13
+                    <span class="sub">Selected: none — choose an action above</span>
+                </button>
+                <button class="skip-btn">⏭ Do Nothing — Skip Turn (Byte acts freely)</button>
+            </div>
+        </aside>
+
+    </main>
+
+</body>
+</html>
