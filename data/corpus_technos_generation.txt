@@ -1,0 +1,979 @@
+#### The-Edge-WAF-Shield
+
+**id**: cdn_waf
+**category**: entry
+**subcategory**: gateway
+
+**description**: Your first line of defense against the internet’s garbage. It’s a globally distributed cache with a firewall that thinks it's smarter than a botnet. Essential for hiding your origin server’s shame and surviving a "Stress Test" (DDoS).
+
+**game_stats**:
+- throughput: 8-10
+- defense: 6-9
+- visibility: 5-7
+- cost: 5-8
+- compliance_score: 7-9
+
+**strengths**:
+- Absorbs volumetric attacks while you sleep.
+- Lowers latency for users who don't live next to your data center.
+- SSL termination at the edge saves your backend's CPU cycles.
+
+**weaknesses**:
+- Misconfiguration can "black-hole" your entire production traffic.
+- Shared IP reputation risks from "noisy neighbors" on the same provider.
+- Enterprise features cost more than your monthly burn rate.
+
+**typical_edges**:
+- → api_gateway: forwards "mostly clean" traffic.
+- → load_balancer: distributes cached-miss traffic.
+- ↔ auth_service: injects security headers for edge-validation.
+
+**sector_affinity**: neobank, p2p, hft, payments
+**flow_roles**: revenue_path, security
+
+**cost_range_eur_k**: 25-45 €K/turn
+
+#### The-Round-Robin-Balancer
+
+**id**: load_balancer
+**category**: entry
+**subcategory**: gateway
+
+**description**: The traffic cop. It stands in front of your crumbling microservices and tries to find a server that isn't currently on fire. Handles the health checks so you don't have to manually pull nodes.
+
+**game_stats**:
+- throughput: 9-10
+- defense: 4-6
+- visibility: 6-8
+- cost: 3-5
+- compliance_score: 5-7
+
+**strengths**:
+- High availability via instant failover.
+- Simplifies horizontal scaling during a PR-driven traffic spike.
+- Offloads the "Sticky Session" headache from the app layer.
+
+**weaknesses**:
+- If the LB goes down, your "High Availability" is just a lie.
+- Zombie nodes can pass health checks and still return 500s.
+- SSL handshake latency if not tuned by someone who actually knows OpenSSL.
+
+**typical_edges**:
+- → api_gateway: routes requests to the ingress controller.
+- ← cdn_waf: receives filtered global traffic.
+- ↔ payment_engine: ensures transaction nodes aren't overwhelmed.
+
+**sector_affinity**: neobank, hft, payments
+**flow_roles**: revenue_path, support
+
+**cost_range_eur_k**: 12-22 €K/turn
+
+#### Ingress-Gatekeeper-Pro
+
+**id**: api_gateway
+**category**: entry
+**subcategory**: gateway
+
+**description**: The grand entrance for your APIs. It handles rate-limiting, versioning, and protocol translation so your developers can keep writing messy code behind it. It's the "Front Door" of your technical debt.
+
+**game_stats**:
+- throughput: 7-9
+- defense: 4-6
+- visibility: 8-10
+- cost: 3-5
+- compliance_score: 6-8
+
+**strengths**:
+- Centralized metrics for every single API call.
+- Throttles the "Free Tier" users before they melt your database.
+- Handles API keys and JWT validation without bothering the backend.
+
+**weaknesses**:
+- A single bad Regex rule in the gateway can take down the whole app.
+- Adds 20ms of latency to every request just for existing.
+- Vulnerable to "Shadow API" endpoints that were never documented.
+
+**typical_edges**:
+- → auth_service: passes credentials for the "Permission Denied" experience.
+- → message_broker: pipes API events into the async abyss.
+- ↔ load_balancer: works in tandem to keep the ingress stable.
+
+**sector_affinity**: neobank, p2p, payments
+**flow_roles**: revenue_path
+
+**cost_range_eur_k**: 15-28 €K/turn
+
+#### IAM-Identity-Broker
+
+**id**: auth_service
+**category**: middleware
+**subcategory**: auth
+
+**description**: The bouncer. Manages users, sessions, and "Who is allowed to touch the money." It’s a mix of OIDC, SAML, and prayers. If this fails, no one logs in—not even you.
+
+**game_stats**:
+- throughput: 5-7
+- defense: 8-10
+- visibility: 7-9
+- cost: 5-7
+- compliance_score: 9-10
+
+**strengths**:
+- MFA (Multi-Factor) is the only reason you still have a job.
+- Audit logs that make the regulators stop breathing down your neck.
+- Centralized "Kill Switch" for fired employees.
+
+**weaknesses**:
+- Session hijacking is a constant threat if cookies aren't "HttpOnly."
+- Integration hell: syncing with 5 different identity providers.
+- If the external auth vendor goes down, your platform is a brick.
+
+**typical_edges**:
+- ← api_gateway: receives the "Who am I?" requests.
+- → relational_db: stores the encrypted secrets and roles.
+- ↔ fraud_detection: flags "Impossible Travel" logins.
+
+**sector_affinity**: neobank, p2p, hft, payments
+**flow_roles**: security, compliance
+
+**cost_range_eur_k**: 20-35 €K/turn
+
+#### Kafkaesque-PubSub-Bus
+
+**id**: message_broker
+**category**: middleware
+**subcategory**: communication
+
+**description**: An asynchronous "fire and forget" pipe. It lets your services talk to each other without actually having to wait for an answer. Perfect for distributed systems that eventually want to be consistent.
+
+**game_stats**:
+- throughput: 9-10
+- defense: 4-6
+- visibility: 6-8
+- cost: 6-9
+- compliance_score: 6-8
+
+**strengths**:
+- High-throughput ingestion of events (millions/sec).
+- Decouples microservices: Service A doesn't care if Service B is dead.
+- Replayable history: "Wait, what happened last Tuesday at 4 AM?"
+
+**weaknesses**:
+- "Exactly-once" delivery is a myth that will hurt you.
+- Poison pill messages that crash every consumer in the cluster.
+- Ops overhead: managing partitions is a full-time job.
+
+**typical_edges**:
+- ← payment_engine: emits "Money Moved" events.
+- → fraud_detection: consumes events to find criminals.
+- ↔ trading_engine: synchronizes the order book.
+
+**sector_affinity**: hft, payments
+**flow_roles**: support, analytics
+
+**cost_range_eur_k**: 30-55 €K/turn
+
+#### In-Memory-Nitro-Cache
+
+**id**: caching_layer
+**category**: middleware
+**subcategory**: processing
+
+**description**: A super-fast temporary brain. It keeps "hot" data in RAM so you don't keep hitting the slow-as-molasses database. It’s the difference between a 10ms response and a 2s timeout.
+
+**game_stats**:
+- throughput: 10-10
+- defense: 3-5
+- visibility: 5-7
+- cost: 2-5
+- compliance_score: 4-6
+
+**strengths**:
+- Sub-millisecond latency for common queries.
+- Atomic counters for rate-limiting.
+- Reduces DB load by 80% if your cache-hit ratio is healthy.
+
+**weaknesses**:
+- Cache invalidation is one of the two hardest problems in CS.
+- Cold-start "Thundering Herd" will melt your DB when the cache reboots.
+- RAM is expensive and data vanishes if the power flickers.
+
+**typical_edges**:
+- ← auth_service: stores session tokens for fast lookup.
+- → relational_db: the "Source of Truth" when the cache misses.
+- ↔ api_gateway: tracks IP-based request quotas.
+
+**sector_affinity**: neobank, hft
+**flow_roles**: support
+
+**cost_range_eur_k**: 10-18 €K/turn
+
+#### Sidecar-Mesh-Manager
+
+**id**: service_mesh
+**category**: middleware
+**subcategory**: integration
+
+**description**: A complex layer of proxies that live next to your services. It handles mTLS, retries, and service discovery. It’s the "Enterprise" way to solve problems you wouldn't have if your network was simple.
+
+**game_stats**:
+- throughput: 6-8
+- defense: 7-9
+- visibility: 9-10
+- cost: 6-8
+- compliance_score: 8-10
+
+**strengths**:
+- Zero-Trust networking: every internal packet is encrypted.
+- Distributed tracing: see exactly where a request died.
+- Traffic splitting for "Canary Deploys" (testing on 1% of users).
+
+**weaknesses**:
+- Significant "Sidecar Tax" on latency and CPU usage.
+- YAML configuration so complex it requires a PhD to debug.
+- If the control plane fails, your entire cluster goes blind.
+
+**typical_edges**:
+- ↔ payment_engine: manages internal peer-to-peer security.
+- → auth_service: enforces service-level permissions.
+- ← message_broker: secures the connection to the bus.
+
+**sector_affinity**: neobank, payments
+**flow_roles**: support, security
+
+**cost_range_eur_k**: 28-40 €K/turn
+
+#### Legacy-SQL-Relational
+
+**id**: relational_db
+**category**: database
+**subcategory**: storage
+
+**description**: The old reliable. ACID-compliant, structured, and boring. This is where the actual money lives. If you lose this, you aren't a CTO anymore—you're an unemployed person with a lot of explaining to do.
+
+**game_stats**:
+- throughput: 4-7
+- defense: 7-9
+- visibility: 6-8
+- cost: 5-8
+- compliance_score: 9-10
+
+**strengths**:
+- Transactions that actually work. No "Eventual Consistency" nonsense.
+- Powerful joins for complex financial reporting.
+- Decades of mature tooling and backup solutions.
+
+**weaknesses**:
+- Vertical scaling hits a wall very fast.
+- Schema migrations are the stuff of nightmares for a 24/7 app.
+- Connection pooling limits will eventually bite you in the microservices.
+
+**typical_edges**:
+- ← auth_service: stores the user table.
+- → data_warehouse: dumps data for the "Business Guys" to analyze.
+- ↔ payment_engine: the definitive ledger of truth.
+
+**sector_affinity**: neobank, p2p, payments
+**flow_roles**: revenue_path, compliance
+
+**cost_range_eur_k**: 35-60 €K/turn
+
+#### Schema-Less-NoSQL-Bucket
+
+**id**: nosql_db
+**category**: database
+**subcategory**: storage
+
+**description**: A giant digital landfill. Just throw JSON in there and worry about the structure later (spoiler: you never will). Great for logs, user profiles, and things that scale horizontally until the end of time.
+
+**game_stats**:
+- throughput: 8-10
+- defense: 5-7
+- visibility: 4-6
+- cost: 4-7
+- compliance_score: 5-7
+
+**strengths**:
+- Scales to petabytes without breaking a sweat.
+- Flexible schema means "Move Fast and Break Things" is easy.
+- High availability with built-in sharding and replication.
+
+**weaknesses**:
+- "Eventual Consistency" means a user might see their old balance.
+- No complex joins: you have to do the work in the application code.
+- Query performance drops off a cliff if you forget an index.
+
+**typical_edges**:
+- ← fraud_detection: stores massive pattern logs.
+- → data_warehouse: streams unstructured data for ML training.
+- ↔ notification_service: stores user notification preferences.
+
+**sector_affinity**: p2p, hft
+**flow_roles**: support, analytics
+
+**cost_range_eur_k**: 20-35 €K/turn
+
+#### Immutable-Ledger-Chain
+
+**id**: blockchain_ledger
+**category**: database
+**subcategory**: storage
+
+**description**: A cryptographic ledger that never forgets and never forgives. Every transaction is chained to the last one. Excellent for proving you didn't cook the books, even if the board of directors wanted to.
+
+**game_stats**:
+- throughput: 2-5
+- defense: 9-10
+- visibility: 8-10
+- cost: 7-10
+- compliance_score: 10-10
+
+**strengths**:
+- Mathematical proof of transaction history.
+- Tamper-proof: even the DBA can't "edit" a record quietly.
+- Public/Private auditability without building a custom portal.
+
+**weaknesses**:
+- Throughput is embarrassing compared to a SQL DB.
+- Privacy issues: "Right to be Forgotten" is impossible here.
+- Smart contract bugs are permanent and expensive.
+
+**typical_edges**:
+- ← trading_engine: settles high-value asset trades.
+- → reconciliation_engine: acts as the "Ultimate Truth."
+- ↔ escrow_service: executes programmatic fund locks.
+
+**sector_affinity**: hft, p2p
+**flow_roles**: revenue_path, compliance
+
+**cost_range_eur_k**: 50-80 €K/turn
+
+#### Big-OLAP-Data-Warehouse
+
+**id**: data_warehouse
+**category**: database
+**subcategory**: analytics
+
+**description**: The massive archive. It's too slow for production, but perfect for running queries that take 20 minutes and tell you why you're losing money. The playground of Data Scientists.
+
+**game_stats**:
+- throughput: 2-4
+- defense: 6-8
+- visibility: 10-10
+- cost: 6-9
+- compliance_score: 7-9
+
+**strengths**:
+- Columnar storage makes aggregate queries (SUM, AVG) lightning fast.
+- Integrates all your siloed data into one single view.
+- Supports the complex ML models your CEO keeps talking about.
+
+**weaknesses**:
+- ETL pipelines are brittle and always break at 3 AM.
+- Storage costs grow exponentially while no one deletes anything.
+- "Data Privacy" becomes a nightmare when everything is centralized.
+
+**typical_edges**:
+- ← relational_db: pulls nightly snapshots of users.
+- ← message_broker: ingests every single click-stream event.
+- → risk_scoring: provides 6 months of history for credit models.
+
+**sector_affinity**: neobank, payments
+**flow_roles**: analytics
+
+**cost_range_eur_k**: 40-70 €K/turn
+
+#### The-PCI-Payment-Processor
+
+**id**: payment_engine
+**category**: server
+**subcategory**: processing
+
+**description**: The revenue generator. It handles the scary logic of taking money from A and giving it to B. It lives in a "Secure Zone" because the audit for this service is essentially a colonoscopy.
+
+**game_stats**:
+- throughput: 7-9
+- defense: 7-9
+- visibility: 6-8
+- cost: 5-8
+- compliance_score: 9-10
+
+**strengths**:
+- Native handling of refunds, chargebacks, and partial captures.
+- Built-in retry logic for "The Bank is down" scenarios.
+- High-level encryption for credit card data (Vaulting).
+
+**weaknesses**:
+- If this service has a bug, you're literally losing money.
+- Massive compliance overhead (PCI DSS Level 1).
+- Latency from external banking gateways is outside your control.
+
+**typical_edges**:
+- ← api_gateway: the source of "Take my money" requests.
+- → card_network: the exit to the real-world banking rails.
+- ↔ fraud_detection: the "Should we really take this money?" check.
+
+**sector_affinity**: neobank, payments
+**flow_roles**: revenue_path
+
+**cost_range_eur_k**: 30-50 €K/turn
+
+#### ML-Fraud-Pattern-Matcher
+
+**id**: fraud_detection
+**category**: server
+**subcategory**: security
+
+**description**: A "Smart" system that looks for patterns in the noise. It tries to catch the hacker who just bought 500 iPhones from a single IP in the North Pole. It’s mostly Linear Regression with a "Deep Learning" label for the VCs.
+
+**game_stats**:
+- throughput: 6-8
+- defense: 8-10
+- visibility: 7-9
+- cost: 6-9
+- compliance_score: 8-10
+
+**strengths**:
+- Catches account takeovers and card testing attacks.
+- Reduces manual work for your "Risk Operations" team.
+- Improves over time as it sees more "bad guys."
+
+**weaknesses**:
+- False Positives: blocking your biggest whale because they are on vacation.
+- "Concept Drift": fraudsters change their tactics faster than you retrain.
+- Explainability: "Why did it block this?" "Because the computer said so."
+
+**typical_edges**:
+- ← message_broker: listens to the stream of "suspicious" events.
+- → notification_service: sends the "Was this you?" SMS.
+- ↔ risk_scoring: shares behavioral biometrics data.
+
+**sector_affinity**: neobank, p2p, payments
+**flow_roles**: security
+
+**cost_range_eur_k**: 35-60 €K/turn
+
+#### High-Freq-Matching-Engine
+
+**id**: trading_engine
+**category**: server
+**subcategory**: processing
+
+**description**: A low-latency beast. It matches Buy orders with Sell orders in microseconds. If you spend too much time on a context switch, you lose the trade. This is the F1 car of your architecture.
+
+**game_stats**:
+- throughput: 10-10
+- defense: 4-6
+- visibility: 6-8
+- cost: 8-12
+- compliance_score: 5-7
+
+**strengths**:
+- Handles massive bursts of orders during market volatility.
+- Optimized for sub-millisecond execution.
+- Direct-market-access (DMA) capable.
+
+**weaknesses**:
+- Extremely fragile: one "off-by-one" error and you're bankrupt.
+- Impossible to debug without nanosecond-precision logging.
+- Requires specialized hardware or "Bare Metal" to really shine.
+
+**typical_edges**:
+- ← api_gateway: accepts orders from HFT bots.
+- → blockchain_ledger: settles the trades permanently.
+- ↔ risk_scoring: checks "Does this guy have the money?" in 500μs.
+
+**sector_affinity**: hft
+**flow_roles**: revenue_path
+
+**cost_range_eur_k**: 60-100 €K/turn
+
+#### Multi-Channel-Push-Pigeon
+
+**id**: notification_service
+**category**: server
+**subcategory**: communication
+
+**description**: The spam engine. Sends Push, SMS, and Email. It's 10% utility and 90% "Please come back and use our app." Vital for 2FA and transactional receipts.
+
+**game_stats**:
+- throughput: 8-10
+- defense: 3-5
+- visibility: 5-7
+- cost: 2-4
+- compliance_score: 5-7
+
+**strengths**:
+- Keeps users engaged (or annoyed).
+- Delivers the "One-Time-Password" that keeps the accounts safe.
+- Templates allow Marketing to change the wording without a deploy.
+
+**weaknesses**:
+- SMS costs will eat your margin in certain countries.
+- If you spam too much, Gmail will send your domain to the shadow realm.
+- API keys for these vendors are often found in "test" environments.
+
+**typical_edges**:
+- ← auth_service: triggers the "Confirm your email" flow.
+- ← fraud_detection: alerts users to "New Login from Unknown Device."
+- ↔ payment_engine: sends the "You just spent $50" receipt.
+
+**sector_affinity**: neobank, p2p
+**flow_roles**: support
+
+**cost_range_eur_k**: 12-25 €K/turn
+
+#### T-Account-Reconciliation-Bot
+
+**id**: reconciliation_engine
+**category**: server
+**subcategory**: processing
+
+**description**: The digital auditor. It compares your internal ledger with the bank's "Source of Truth" to find the missing pennies. It's the only thing standing between you and a massive regulatory fine.
+
+**game_stats**:
+- throughput: 4-6
+- defense: 6-8
+- visibility: 8-10
+- cost: 4-7
+- compliance_score: 10-10
+
+**strengths**:
+- Finds "Ghost Transactions" and banking errors.
+- Automates the "Month-End Close" for the Finance team.
+- High visibility into the actual cash flow of the company.
+
+**weaknesses**:
+- Batch-processed: you only find out things are wrong 24 hours later.
+- Mismatched timestamps make matching a "probabilistic" nightmare.
+- Parsing bank CSVs is a form of psychological torture.
+
+**typical_edges**:
+- ← blockchain_ledger: pulls the immutable logs.
+- → data_warehouse: stores the "Reconciled" truth.
+- ↔ payment_engine: matches intent vs. reality.
+
+**sector_affinity**: payments, hft
+**flow_roles**: compliance
+
+**cost_range_eur_k**: 22-38 €K/turn
+
+#### Monte-Carlo-Risk-Scorer
+
+**id**: risk_scoring
+**category**: server
+**subcategory**: analytics
+
+**description**: The math machine. It runs thousands of simulations to decide if a loan is a good idea or if a trade will blow up the company. It’s where the "Quants" live.
+
+**game_stats**:
+- throughput: 5-7
+- defense: 7-9
+- visibility: 7-9
+- cost: 5-8
+- compliance_score: 8-10
+
+**strengths**:
+- Predictive power: knows you're going broke before you do.
+- Scenario testing: "What if the interest rate hits 10%?"
+- Hardens the balance sheet against market shocks.
+
+**weaknesses**:
+- "Garbage In, Garbage Out": bad historical data leads to ruin.
+- Models are often "Black Boxes" that even the creators don't understand.
+- Computationally expensive: needs a lot of GPU/CPU juice.
+
+**typical_edges**:
+- ← data_warehouse: feeds on 2 years of user behavior.
+- → trading_engine: sets the "Max Position" limits.
+- ↔ fraud_detection: combines credit risk with theft risk.
+
+**sector_affinity**: neobank, hft
+**flow_roles**: security, analytics
+
+**cost_range_eur_k**: 30-50 €K/turn
+
+#### Automated-KYC-Scanner
+
+**id**: kyc_aml
+**category**: server
+**subcategory**: compliance
+
+**description**: The "Know Your Customer" bot. It checks passports and utility bills. It’s the barrier between you and money launderers. Without this, the government shuts you down on day one.
+
+**game_stats**:
+- throughput: 3-5
+- defense: 8-10
+- visibility: 6-8
+- cost: 5-7
+- compliance_score: 10-10
+
+**strengths**:
+- Screens against "Sanctions Lists" in real-time.
+- OCR (Optical Character Recognition) means no human needs to read blurry IDs.
+- Creates an audit trail that satisfies the most grumpy regulators.
+
+**weaknesses**:
+- High friction: users hate taking selfies with their passports.
+- False negatives: good people getting rejected because of a shadow on their ID.
+- Data liability: storing high-res photos of IDs is a "Hack Me" sign.
+
+**typical_edges**:
+- ← api_gateway: receives the "Onboarding" payload.
+- → relational_db: marks a user as "Verified."
+- ↔ cloud_kyc: delegates the "Deep Fake" detection.
+
+**sector_affinity**: neobank, p2p
+**flow_roles**: compliance
+
+**cost_range_eur_k**: 28-45 €K/turn
+
+#### Conditional-Escrow-Locker
+
+**id**: escrow_service
+**category**: server
+**subcategory**: processing
+
+**description**: The "Hold my Money" service. It keeps funds in limbo until both parties agree the deal is done. Essential for marketplaces where no one trusts each other.
+
+**game_stats**:
+- throughput: 4-6
+- defense: 7-9
+- visibility: 5-7
+- cost: 3-6
+- compliance_score: 8-10
+
+**strengths**:
+- Solves the "Counterparty Risk" problem.
+- Programmatic release of funds based on delivery APIs.
+- Legal buffer: "The money is in the middle, we don't own it yet."
+
+**weaknesses**:
+- Funds are "trapped," causing liquidity complaints.
+- "Friendly Fraud": the buyer says they never got the item.
+- Complex state-machine logic: what happens if the seller dies mid-trade?
+
+**typical_edges**:
+- ← payment_engine: receives the initial deposit.
+- → blockchain_ledger: logs the state of the "smart lock."
+- ↔ customer_support: handles the manual dispute resolution.
+
+**sector_affinity**: p2p
+**flow_roles**: revenue_path
+
+**cost_range_eur_k**: 18-30 €K/turn
+
+#### External-Card-Scheme-Rail
+
+**id**: card_network
+**category**: vendor
+**subcategory**: integration
+
+**description**: The giant global networks (Visa/MC). You don't own this, you just rent access to it. They charge you for everything, but they own the world's wallet.
+
+**game_stats**:
+- throughput: 9-10
+- defense: 6-8
+- visibility: 4-6
+- cost: 7-10
+- compliance_score: 9-10
+
+**strengths**:
+- Instantly accept payments from 3 billion people.
+- Standardized security (3DS) and fraud protection.
+- They handle the messy "Interbank" settlement.
+
+**weaknesses**:
+- Interchange fees will destroy your small-ticket margins.
+- Arbitrary rule changes can kill your business model overnight.
+- "Chargeback" liability usually falls on you, not them.
+
+**typical_edges**:
+- ← payment_engine: the tunnel to the bank.
+- → reconciliation_engine: provides the batch settlement files.
+- ↔ fraud_detection: sends/receives "Card Testing" alerts.
+
+**sector_affinity**: neobank, payments
+**flow_roles**: revenue_path
+
+**cost_range_eur_k**: 45-75 €K/turn
+
+#### Third-Party-Credit-Bureau
+
+**id**: credit_bureau
+**category**: vendor
+**subcategory**: analytics
+
+**description**: The "Score Keepers." They know if your users are good for their money based on their history of paying for their cars and couches. A necessary evil for lending.
+
+**game_stats**:
+- throughput: 5-7
+- defense: 6-8
+- visibility: 5-7
+- cost: 4-6
+- compliance_score: 7-9
+
+**strengths**:
+- External validation of a user's financial responsibility.
+- Reduces "Bad Debt" write-offs by flagging high-risk borrowers.
+- Massive historical dataset you could never build yourself.
+
+**weaknesses**:
+- Data is often 30 days old and misses recent defaults.
+- Privacy regulations (GDPR/CCPA) make this a data-sharing minefield.
+- Service outages during peak lending hours are common.
+
+**typical_edges**:
+- ← risk_scoring: pulls the "FICO" style score.
+- → relational_db: caches the report for 90 days.
+- ↔ kyc_aml: cross-references address history.
+
+**sector_affinity**: neobank, p2p
+**flow_roles**: compliance, analytics
+
+**cost_range_eur_k**: 22-35 €K/turn
+
+#### Cloud-ID-Biometric-Check
+
+**id**: cloud_kyc
+**category**: vendor
+**subcategory**: compliance
+
+**description**: A specialized 3rd-party service that uses AI to check if a selfie matches a passport. They handle the "Liveness Detection" so people can't use a 3D-printed mask to rob your bank.
+
+**game_stats**:
+- throughput: 4-6
+- defense: 8-10
+- visibility: 6-8
+- cost: 5-8
+- compliance_score: 9-10
+
+**strengths**:
+- State-of-the-art AI for catching sophisticated forgeries.
+- No need to build an internal image-processing team.
+- Regulatory "Seal of Approval."
+
+**weaknesses**:
+- High cost per "Attempt" (success or fail).
+- Latency: takes 10-60 seconds for a human to be verified.
+- "Deepfakes" are starting to beat these systems.
+
+**typical_edges**:
+- ← kyc_aml: delegates the biometric heavy lifting.
+- → nosql_db: stores the result metadata.
+- ↔ auth_service: binds the identity to the account.
+
+**sector_affinity**: neobank, payments
+**flow_roles**: compliance
+
+**cost_range_eur_k**: 35-55 €K/turn
+
+#### The-Sinking-HR-Portal
+
+**id**: hr_portal
+**category**: human
+**subcategory**: communication
+
+**description**: Where your staff enters their personal info. In a scale-up, this is usually a mess of shared passwords and PII (Personally Identifiable Information). A goldmine for social engineers.
+
+**game_stats**:
+- throughput: 2-4
+- defense: 2-4
+- visibility: 3-5
+- cost: 3-5
+- compliance_score: 5-7
+
+**strengths**:
+- Keeps track of who is actually employed.
+- Handles payroll so people don't quit.
+- Minimal technical maintenance (it's someone else's SaaS).
+
+**weaknesses**:
+- The "Weak Link": admins often use "Password123."
+- Phishing target: "Your payroll info needs updating" emails.
+- Data leaks here lead to lawsuits, not just outages.
+
+**typical_edges**:
+- ← auth_service: manages the staff SSO (Single Sign-On).
+- → notification_service: sends holiday reminders.
+- ↔ admin_dashboard: determines who gets "God Mode" access.
+
+**sector_affinity**: neobank, p2p, hft, payments
+**flow_roles**: support
+
+**cost_range_eur_k**: 18-28 €K/turn
+
+#### God-Mode-Admin-Dashboard
+
+**id**: admin_dashboard
+**category**: human
+**subcategory**: processing
+
+**description**: The "Red Button" panel. Used by your internal ops to manually fix things when the code fails. It has enough power to wipe out your customer base if used by a disgruntled intern.
+
+**game_stats**:
+- throughput: 3-5
+- defense: 3-5
+- visibility: 9-10
+- cost: 2-4
+- compliance_score: 4-6
+
+**strengths**:
+- Fixes "Unfixable" bugs via manual intervention.
+- Real-time business metrics for the C-suite.
+- Allows support to act like heroes.
+
+**weaknesses**:
+- Insider Threat: privileged access is dangerous.
+- Usually the least secure part of the app (the "Dark Side" of the moon).
+- One "UPDATE without WHERE" from disaster.
+
+**typical_edges**:
+- ← data_warehouse: visualizes the business health.
+- → service_mesh: lets admins re-route traffic during a fire.
+- ↔ customer_support: where the agents look up user info.
+
+**sector_affinity**: neobank, hft
+**flow_roles**: support, analytics
+
+**cost_range_eur_k**: 12-25 €K/turn
+
+#### Ticket-Backlog-Support
+
+**id**: customer_support
+**category**: human
+**subcategory**: communication
+
+**description**: The front line of human interaction. Where the screams of your users are turned into "Tickets." Essential for managing disputes and fixing the mess your "Agile" process created.
+
+**game_stats**:
+- throughput: 4-6
+- defense: 2-4
+- visibility: 5-7
+- cost: 4-6
+- compliance_score: 6-8
+
+**strengths**:
+- Stops PR disasters by talking to angry users.
+- Gathers data on the most common bugs (your technical debt).
+- Arbitrates escrow and payment disputes.
+
+**weaknesses**:
+- High turnover: support staff leave as soon as they can.
+- Social Engineering: "I lost my phone, please let me in the account."
+- Doesn't scale: more users = more humans needed.
+
+**typical_edges**:
+- ← notification_service: keeps the agent informed of user issues.
+- → escrow_service: provides the "Human Judgment" for releases.
+- ↔ relational_db: accesses the user's transaction history.
+
+**sector_affinity**: neobank, p2p, payments
+**flow_roles**: support
+
+**cost_range_eur_k**: 20-35 €K/turn
+
+#### Vault-Secret-Manager
+
+**id**: secrets_manager
+**category**: middleware
+**subcategory**: security
+
+**description**: The high-security locker for your keys, passwords, and certificates. It’s like a digital Swiss bank. If you hardcode your DB password in Git, this service is here to tell you how much you failed.
+
+**game_stats**:
+- throughput: 6-8
+- defense: 10-10
+- visibility: 6-8
+- cost: 3-6
+- compliance_score: 10-10
+
+**strengths**:
+- Automatic secret rotation (passwords change every 30 days).
+- Dynamic credentials: your app gets a temporary password that dies in 1 hour.
+- Encryption-as-a-Service: keeps raw PII off your disks.
+
+**weaknesses**:
+- "The Keys to the Kingdom": if this is breached, you're 100% dead.
+- Bootstrapping problem: "Where do I store the key to the secret manager?"
+- Latency: fetching a secret for every DB connection is slow.
+
+**typical_edges**:
+- → relational_db: provides the credentials for app access.
+- → payment_engine: protects the API keys for the card networks.
+- ↔ auth_service: secures the JWT signing keys.
+
+**sector_affinity**: neobank, hft, payments
+**flow_roles**: security
+
+**cost_range_eur_k**: 18-32 €K/turn
+
+#### Observability-Log-Aggregator
+
+**id**: monitoring_logging
+**category**: middleware
+**subcategory**: analytics
+
+**description**: The black box recorder. It collects every log, trace, and metric. It’s useless until something goes wrong; then it’s the only way to find the needle in the haystack of your 50 microservices.
+
+**game_stats**:
+- throughput: 7-10
+- defense: 4-6
+- visibility: 10-10
+- cost: 5-10
+- compliance_score: 7-9
+
+**strengths**:
+- Real-time alerting: "Why is the 500-error rate at 20%?"
+- Root Cause Analysis: follow a request through 10 different servers.
+- Audit readiness: "Prove that John Doe accessed this file."
+
+**weaknesses**:
+- Log "Diarrhea": storing billions of useless logs costs a fortune.
+- Performance: heavy logging can slow down your app's actual work.
+- Sensitive data leak: "Whoops, we logged the customer's full credit card number."
+
+**typical_edges**:
+- ← api_gateway: tracks every single inbound request.
+- ← message_broker: monitors queue lag and throughput.
+- → admin_dashboard: feeds the pretty graphs for the CTO.
+
+**sector_affinity**: neobank, hft, payments
+**flow_roles**: support, analytics
+
+**cost_range_eur_k**: 25-50 €K/turn
+
+#### Auto-Deploy-Pipeline-Orchestrator
+
+**id**: cicd_pipeline
+**category**: middleware
+**subcategory**: integration
+
+**description**: The conveyor belt that takes code from a developer's laptop and throws it into production. It runs tests, checks for security holes, and automates the destruction of your stable environment.
+
+**game_stats**:
+- throughput: 5-8
+- defense: 5-7
+- visibility: 7-9
+- cost: 3-6
+- compliance_score: 8-10
+
+**strengths**:
+- "Ship Fast": deploy code 50 times a day without human touch.
+- Automated security scanning: finds old libraries before hackers do.
+- Standardizes the environment: "It works on my machine" is no longer an excuse.
+
+**weaknesses**:
+- Supply Chain Attacks: if your CI tool is hacked, they can inject code into your bank.
+- "The Red Build": one flaky test can stop all progress for the whole team.
+- Complexity: the pipeline code is often more complex than the app.
+
+**typical_edges**:
+- → service_mesh: pushes new routing rules during a deploy.
+- → secrets_manager: pulls the keys needed for build-time secrets.
+- ← monitoring_logging: reports if the new deploy is crashing everything.
+
+**sector_affinity**: neobank, hft, p2p, payments
+**flow_roles**: support, security
+
+**cost_range_eur_k**: 20-40 €K/turn

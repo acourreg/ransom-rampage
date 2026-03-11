@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ransom Rampage — LeaseEase Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-void: #07090D;
+            --bg-panel: #0D1117;
+            --bg-card: #161B22;
+            --border: #30363D;
+            --text-main: #E6EDF3;
+            --text-dim: #7D8590;
+            --accent: #58A6FF;
+            --red: #F85149;
+            --green: #3FB950;
+            --amber: #D29922;
+            --status-compromised: #F85149;
+        }
+
+        * { box-sizing: border-box; }
+        body {
+            background: var(--bg-void);
+            color: var(--text-main);
+            font-family: 'Outfit', sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        header {
+            padding: 1rem 2rem;
+            background: var(--bg-panel);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .brand h1 { margin: 0; font-size: 1.5rem; letter-spacing: -1px; color: var(--accent); }
+        .brand p { margin: 0; font-size: 0.85rem; color: var(--text-dim); }
+
+        .metrics { display: flex; gap: 2rem; }
+        .metric { text-align: center; }
+        .metric .label { font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; display: block; }
+        .metric .val { font-family: 'JetBrains Mono', monospace; font-weight: bold; font-size: 1.1rem; }
+
+        main { display: grid; grid-template-columns: 1fr 380px; flex: 1; overflow: hidden; }
+
+        .viewport {
+            position: relative;
+            background-image: radial-gradient(var(--border) 1px, transparent 1px);
+            background-size: 30px 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tooltip {
+            position: absolute;
+            background: rgba(13, 17, 23, 0.95);
+            border: 1px solid var(--accent);
+            padding: 12px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            max-width: 280px;
+            pointer-events: none;
+            display: none;
+            z-index: 100;
+        }
+
+        aside {
+            background: var(--bg-panel);
+            border-left: 1px solid var(--border);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            overflow-y: auto;
+        }
+
+        .section-title { font-size: 0.75rem; color: var(--accent); text-transform: uppercase; border-bottom: 1px solid var(--border); padding-bottom: 5px; margin-bottom: 10px; }
+        
+        .flow-card { background: var(--bg-card); padding: 10px; border-radius: 4px; margin-bottom: 10px; border-left: 3px solid var(--green); }
+        .flow-card h4 { margin: 0; font-size: 0.85rem; }
+        .flow-rev { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--green); margin-top: 5px; }
+
+        .action-btn {
+            width: 100%; padding: 12px; background: var(--bg-card); border: 1px solid var(--border);
+            color: var(--text-main); text-align: left; border-radius: 6px; cursor: pointer; margin-bottom: 8px;
+            display: flex; justify-content: space-between; align-items: center;
+            font-family: 'Outfit', sans-serif;
+        }
+        .action-btn:hover { border-color: var(--accent); }
+        .action-btn .cost { color: var(--amber); font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; }
+
+        .log-entry { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; padding: 4px 0; border-bottom: 1px solid #1c2128; }
+        .log-sys { color: var(--accent); }
+        .log-warn { color: var(--amber); }
+
+        /* SVG Styles */
+        .node-rect { transition: 0.2s; cursor: pointer; }
+        .node-rect:hover { filter: brightness(1.2); }
+        .edge-line { stroke: var(--border); stroke-width: 2; fill: none; marker-end: url(#arrowhead); }
+        .node-label { font-family: 'JetBrains Mono', monospace; font-size: 10px; fill: white; pointer-events: none; }
+        .status-badge { font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="brand">
+        <h1>LeaseEase.io</h1>
+        <p>Furniture Fintech — "The backend is a mystery."</p>
+    </div>
+    <div class="metrics">
+        <div class="metric"><span class="label">Cash</span><span class="val">€5500K</span></div>
+        <div class="metric"><span class="label">Net/Turn</span><span class="val" style="color:var(--green)">+€80K</span></div>
+        <div class="metric"><span class="label">Adversary</span><span class="val" style="color:var(--green)">SCRIPT_KIDDIE</span></div>
+    </div>
+</header>
+
+<main>
+    <div class="viewport">
+        <div id="tooltip" class="tooltip"></div>
+        <svg id="game-svg" width="800" height="500">
+            <defs>
+                <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+                    <polygon points="0 0, 10 3.5, 0 7" fill="#30363D" />
+                </marker>
+            </defs>
+            <g id="edges-layer"></g>
+            <g id="nodes-layer"></g>
+        </svg>
+    </div>
+
+    <aside>
+        <div>
+            <div class="section-title">Revenue Flows</div>
+            <div id="flows"></div>
+        </div>
+        <div>
+            <div class="section-title">CTO Operations</div>
+            <button class="action-btn"><span>🛡️ Harden Old Faithful</span><span class="cost">€80K</span></button>
+            <button class="action-btn"><span>🧹 Purge Backup DB (n7)</span><span class="cost">€30K</span></button>
+            <button class="action-btn"><span>🔍 Full Infrastructure Scan</span><span class="cost">€50K</span></button>
+        </div>
+        <div>
+            <div class="section-title">Terminal Log</div>
+            <div id="logs"></div>
+        </div>
+    </aside>
+</main>
+
+<script>
+const data = {
+  "nodes": [
+    { "id": "n1", "name": "Old Faithful LB", "type": "entry", "x": 50, "y": 200, "comp": false, "desc": "Handles traffic like a pro... from 2005." },
+    { "id": "n2", "name": "Vintage Web Svr", "type": "entry", "x": 50, "y": 350, "comp": false, "desc": "Server has seen better days." },
+    { "id": "n3", "name": "Middleware Machine", "type": "middleware", "x": 250, "y": 200, "comp": false, "desc": "Bridging yesterday and today." },
+    { "id": "n5", "name": "Legacy Payment", "type": "middleware", "x": 250, "y": 350, "comp": false, "desc": "Dial-up era payment processing." },
+    { "id": "n4", "name": "Data Depot", "type": "database", "x": 450, "y": 200, "comp": false, "desc": "Holds grandmother's attic secrets." },
+    { "id": "n6", "name": "Antique Tracking", "type": "middleware", "x": 450, "y": 350, "comp": false, "desc": "Diligent librarian system." },
+    { "id": "n7", "name": "Backup Database", "type": "database", "x": 650, "y": 350, "comp": true, "desc": "Encryption needs refreshing." }
+  ],
+  "edges": [
+    {"from": "n1", "to": "n3"}, {"from": "n2", "to": "n5"}, {"from": "n3", "to": "n4"},
+    {"from": "n5", "to": "n6"}, {"from": "n6", "to": "n4"}, {"from": "n3", "to": "n6"}, {"from": "n5", "to": "n7"}
+  ],
+  "flows": [
+    { "name": "Lease Automation", "rev": 50 },
+    { "name": "Marketplace Fees", "rev": 75 },
+    { "name": "SaaS Subscriptions", "rev": 40 }
+  ]
+};
+
+const nodesLayer = document.getElementById('nodes-layer');
+const edgesLayer = document.getElementById('edges-layer');
+const tooltip = document.getElementById('tooltip');
+
+// Edges
+data.edges.forEach(e => {
+    const s = data.nodes.find(n => n.id === e.from);
+    const t = data.nodes.find(n => n.id === e.to);
+    const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    line.setAttribute("x1", s.x + 130); line.setAttribute("y1", s.y + 35);
+    line.setAttribute("x2", t.x); line.setAttribute("y2", t.y + 35);
+    line.setAttribute("class", "edge-line");
+    edgesLayer.appendChild(line);
+});
+
+// Nodes
+data.nodes.forEach(n => {
+    const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    rect.setAttribute("x", n.x); rect.setAttribute("y", n.y);
+    rect.setAttribute("width", 130); rect.setAttribute("height", 70);
+    rect.setAttribute("rx", 4); rect.setAttribute("fill", "var(--bg-card)");
+    rect.setAttribute("stroke", n.comp ? "var(--red)" : "var(--border)");
+    rect.setAttribute("class", "node-rect");
+
+    rect.onmouseover = (e) => {
+        tooltip.style.display = "block";
+        tooltip.style.left = (e.pageX + 15) + "px"; tooltip.style.top = (e.pageY + 15) + "px";
+        tooltip.innerHTML = `<strong>${n.name}</strong><br><small>${n.desc}</small>`;
+    };
+    rect.onmouseout = () => tooltip.style.display = "none";
+
+    const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    label.setAttribute("x", n.x + 10); label.setAttribute("y", n.y + 30);
+    label.setAttribute("class", "node-label"); label.textContent = n.name;
+
+    const type = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    type.setAttribute("x", n.x + 10); type.setAttribute("y", n.y + 50);
+    type.setAttribute("style", "font-size:8px; fill:var(--text-dim); text-transform:uppercase;");
+    type.textContent = n.type;
+
+    g.appendChild(rect); g.appendChild(label); g.appendChild(type);
+    
+    if(n.comp) {
+        const badge = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        badge.setAttribute("x", n.x + 80); badge.setAttribute("y", n.y + 20);
+        badge.setAttribute("fill", "var(--red)"); badge.setAttribute("class", "status-badge");
+        badge.textContent = "⚠ BREACH";
+        g.appendChild(badge);
+    }
+
+    nodesLayer.appendChild(g);
+});
+
+// Side Info
+const flowsDiv = document.getElementById('flows');
+data.flows.forEach(f => {
+    flowsDiv.innerHTML += `<div class="flow-card"><h4>${f.name}</h4><div class="flow-rev">+€${f.rev}K / turn</div></div>`;
+});
+
+document.getElementById('logs').innerHTML = `
+    <div class="log-entry log-sys">> [INIT] LeaseEase production environment online.</div>
+    <div class="log-entry log-warn">> [ALERT] Compromised activity detected on Backup Database (n7).</div>
+`;
+</script>
+</body>
+</html>

@@ -1,125 +1,155 @@
-### Key Points
-- Research suggests that fintech infrastructure varies by type, with neobanks emphasizing scalable microservices for user-facing services, P2P lenders focusing on risk assessment databases, HFT firms prioritizing low-latency servers, and payment processors relying on API gateways for transaction routing.
-- Revenue models show moderate profitability across types, but with risks from regulatory changes and market volatility; neobanks and processors often derive 30-50% from fees and subscriptions, while HFT and P2P rely more on volume-based spreads.
-- Vendor dependencies, especially on cloud providers like AWS/GCP and payment networks like Visa, create concentration risks but enable scalability; evidence leans toward hybrid models for resilience.
+#### Archetype: The Neobank Disruptor
 
-#### Neobanks
-Neobanks like Revolut use cloud-native, API-first architectures for rapid product launches, but face debates over tech vs. banking classification, suggesting balanced views on their hybrid nature.
+**id**: company_neobank
+**sector**: Retail Banking / Challenger Bank
+**description**: A "mobile-first" bank that burns VC cash to acquire users with shiny metal cards. The infrastructure is a mix of modern microservices and painful regulatory requirements.
 
-#### P2P Lenders
-Platforms like LendingClub show strong credit performance but highlight risks in peer matching; evidence supports marketplace models for efficiency, though regulatory evolution adds complexity.
+**Typical Infrastructure Nodes**:
+- **cdn_waf**: Front-line protection for the mobile API.
+- **auth_service**: The "Identity Broker" managing user logins and 2FA.
+- **relational_db**: The "Solid-State SQL" holding the ledger of truth.
+- **kyc_aml**: The "Identity Scan" for onboarding the unbanked.
+- **notification_service**: The "Push Pigeon" for transaction alerts.
+- **payment_engine**: The "Pay-Flow" core for managing transfers.
+- **admin_dashboard**: The "God-Mode" panel for support agents.
+- **monitoring_logging**: The "Log-Observe-Eye" for the 4 AM crashes.
 
-#### HFT Firms
-Firms like Virtu emphasize low-latency tech amid declining HFT prominence; research indicates medium-frequency shifts, acknowledging infrastructure costs while noting durable liquidity provision.
+**Typical Edge Patterns**:
+- High-frequency bursts from **api_gateway** to **auth_service**.
+- Heavy bidirectional sync between **relational_db** and **payment_engine**.
+- Async events from **payment_engine** to **notification_service** via **message_broker**.
 
-#### Payment Processors
-Processors like Stripe and Wise demonstrate robust growth through diversified streams, but with hedging on vendor lock-in risks; data leans toward API-driven models for global scale.
+**Critical Nodes**: 
+- **relational_db**: If this corrupts, the bank's balance sheet is gone.
+- **auth_service**: If down, 100% of users are locked out.
 
----
-### Neobanks: Digital-First Banking Evolution
-Neobanks represent a shift from traditional banking, offering mobile-centric services without physical branches. Using examples like Revolut, they leverage microservices for agility but must balance innovation with compliance. Typical annual revenue for mid-sized neobanks ranges from $1-3 billion, driven by user growth.
+#### Archetype: The Global Payment Rail (PSP)
 
-#### Company Archetype Section
-- **Fintech Type**: Neobank
-- **Typical Infrastructure Nodes** (6-8 components):
-  - **API Gateway (Type: API Gateway)**: Handles incoming requests; high throughput, medium defense (via rate limiting), high visibility (detailed logging), moderate cost, medium compliance (supports GDPR via configs). Critical path in revenue as it routes all user interactions.
-  - **Auth Server (Type: Auth)**: Manages user authentication; medium throughput, high defense (multi-factor), high visibility (audit trails), cheap cost, high compliance (DORA-ready with token standards). Supporting role, ensures secure access but not direct revenue.
-  - **Core Database (Type: Database, e.g., PostgreSQL)**: Stores user data; high throughput, high defense (encryption), high visibility (query monitoring), moderate cost, high compliance (GDPR out-of-box). Critical path for transaction processing.
-  - **Cloud Provider (Type: Vendor, e.g., GCP/AWS)**: Infrastructure hosting; high throughput, medium defense (shared), high visibility (cloud monitoring), expensive cost, medium compliance (certified but configurable). Supporting, enables scalability.
-  - **Event Bus (Type: Middleware)**: Asynchronous communication; high throughput, medium defense, high visibility (tracing), moderate cost, medium compliance. Critical path for real-time updates.
-  - **Payment Network (Type: Vendor, e.g., Visa/Mastercard)**: External processing; high throughput, high defense, medium visibility, expensive cost, high compliance. Critical path for card revenue.
-  - **Frontend Server (Type: Server)**: App delivery; medium throughput, medium defense, high visibility, cheap cost, low compliance. Supporting for user engagement.
-- **Typical Edge Patterns**: Bidirectional flows from API gateway to auth, then to middleware/event bus for async processing; database reads/writes are synchronous from servers; outbound to vendors (cloud/payment networks) for external dependencies.
-- **Critical Nodes**: Core database—if offline, disrupts all revenue streams like payments and subscriptions.
+**id**: company_psp
+**sector**: Payment Service Provider / Merchant Acquiring
+**description**: The middleman of the internet. You take a 2.9% + 30c cut of everyone's dreams. Scale is the only thing that matters, and a 1s delay in processing is a million-dollar loss.
 
-#### Revenue Flow Section
-- **Typical Revenue Streams** (3-4 flows per type):
-  - **Card Payments**: Node chain: API Gateway → Auth Server → Frontend Server → Payment Network → Core Database. Typical revenue $500M-$1B annually (e.g., Revolut's $887M in 2024). Shared: API Gateway, Core Database. Bottleneck: Payment Network (high but external latency).
-  - **FX Transfers**: Node chain: API Gateway → Event Bus → Cloud Provider → Core Database. Typical revenue $300M-$600M annually (e.g., Revolut's $540M). Shared: Core Database. Bottleneck: Event Bus (medium throughput for real-time).
-  - **Subscriptions**: Node chain: API Gateway → Auth Server → Core Database. Typical revenue $300M-$500M annually (e.g., Revolut's $541M). Shared: API Gateway, Core Database. Bottleneck: Auth Server (medium for verification).
-  - **Wealth Services**: Node chain: API Gateway → Middleware → Core Database → Cloud Provider. Typical revenue $100M-$600M annually (e.g., Revolut's $647M). Shared: Core Database. Bottleneck: Middleware (medium for integrations).
+**Typical Infrastructure Nodes**:
+- **load_balancer**: Handling millions of concurrent checkout requests.
+- **payment_engine**: The high-performance "PCI Processor."
+- **fraud_detection**: The "ML-Pattern-Matcher" killing card-testers.
+- **card_network**: The "External Rail" connecting to Visa/MC.
+- **reconciliation_engine**: The "Penny-Match" bot for merchant payouts.
+- **secrets_manager**: The "Vault" for merchant API keys.
+- **nosql_db**: Storing petabytes of non-critical transaction metadata.
+- **service_mesh**: Managing the chaos of 200+ micro-internal services.
 
-### P2P Lenders: Marketplace Lending Platforms
-P2P lenders like LendingClub connect borrowers and investors digitally, with evidence showing superior credit scoring over traditional models, though dependent on regulatory compliance for growth. Typical annual revenue $500M-$1B for established platforms.
+**Typical Edge Patterns**:
+- High-speed unidirectional flow from **api_gateway** to **fraud_detection**.
+- Strict, low-latency loop between **payment_engine** and **card_network**.
+- Massive batch exports from **nosql_db** to **data_warehouse**.
 
-#### Company Archetype Section
-- **Fintech Type**: P2P Lender
-- **Typical Infrastructure Nodes** (6-8 components):
-  - **API Gateway (Type: API Gateway)**: Loan matching requests; medium throughput, medium defense, high visibility, moderate cost, medium compliance. Critical path for platform matching.
-  - **Auth Server (Type: Auth)**: Borrower/investor verification; low throughput, high defense, high visibility, cheap cost, high compliance (GDPR-ready). Supporting for trust.
-  - **Risk Database (Type: Database)**: Credit scoring data; medium throughput, high defense, high visibility, moderate cost, high compliance. Critical path for loan approval revenue.
-  - **Cloud Provider (Type: Vendor, e.g., AWS)**: Scalable hosting; medium throughput, medium defense, high visibility, moderate cost, medium compliance. Supporting for operations.
-  - **Payment Network (Type: Vendor, e.g., ACH)**: Fund transfers; medium throughput, high defense, medium visibility, expensive cost, high compliance. Critical path for disbursements.
-  - **Middleware (Type: Middleware)**: Integration layer; medium throughput, medium defense, high visibility, moderate cost, medium compliance. Supporting for data flow.
-  - **Analytics Server (Type: Server)**: Portfolio management; low throughput, medium defense, high visibility, cheap cost, low compliance. Supporting for investor returns.
-- **Typical Edge Patterns**: Unidirectional from API gateway to auth/risk database for verification; bidirectional to middleware for matching; outbound to vendors for funds.
-- **Critical Nodes**: Risk Database—if offline, halts loan origination, disrupting core revenue.
+**Critical Nodes**:
+- **payment_engine**: The literal revenue pipe.
+- **card_network**: External dependency that can kill your SLA.
 
-#### Revenue Flow Section
-- **Typical Revenue Streams** (3-4 flows per type):
-  - **Origination Fees**: Node chain: API Gateway → Auth Server → Risk Database → Payment Network. Typical revenue $200M-$500M annually (e.g., LendingClub's model). Shared: Risk Database. Bottleneck: Risk Database (medium for scoring).
-  - **Servicing Fees**: Node chain: Middleware → Analytics Server → Core Database. Typical revenue $100M-$300M annually. Shared: Core Database. Bottleneck: Analytics Server (low throughput).
-  - **Investor Fees**: Node chain: API Gateway → Payment Network → Cloud Provider. Typical revenue $50M-$150M annually. Shared: API Gateway. Bottleneck: Payment Network.
-  - **Interest Spreads**: Node chain: Risk Database → Middleware → Payment Network. Typical revenue $100M-$400M annually. Shared: Risk Database. Bottleneck: Middleware.
+#### Archetype: The HFT Alpha-Seeker
 
-### HFT Firms: High-Speed Trading Operations
-HFT firms like Virtu focus on low-latency infrastructure amid market debates on volatility impacts; evidence supports liquidity benefits but notes high entry barriers. Typical annual revenue $2-4B for leaders.
+**id**: company_hft
+**sector**: High-Frequency Trading / Prop Shop
+**description**: You don't have customers; you have algorithms. You compete on nanoseconds. Your infra is essentially a supercomputer trying to front-run the rest of the world.
 
-#### Company Archetype Section
-- **Fintech Type**: HFT Firm
-- **Typical Infrastructure Nodes** (6-8 components):
-  - **Trading Server (Type: Server)**: Execution engine; high throughput, high defense, high visibility, expensive cost, medium compliance. Critical path for all trades.
-  - **Data Provider (Type: Vendor, e.g., Bloomberg)**: Market feeds; high throughput, medium defense, high visibility, expensive cost, low compliance. Supporting for signals.
-  - **Colocation (Type: Infrastructure)**: Low-latency hosting; high throughput, high defense, medium visibility, expensive cost, medium compliance. Critical path for speed.
-  - **API Gateway (Type: API Gateway)**: Exchange connections; high throughput, medium defense, high visibility, moderate cost, medium compliance. Critical path.
-  - **Risk Database (Type: Database)**: Position tracking; high throughput, high defense, high visibility, moderate cost, high compliance. Supporting but vital.
-  - **Middleware (Type: Middleware)**: Event processing; high throughput, medium defense, high visibility, moderate cost, medium compliance. Critical for real-time.
-  - **Cloud Provider (Type: Vendor, e.g., AWS)**: Backup analytics; medium throughput, medium defense, high visibility, moderate cost, medium compliance. Supporting.
-- **Typical Edge Patterns**: Unidirectional high-speed feeds from data providers to servers; bidirectional via middleware to exchanges; low-latency loops for risk checks.
-- **Critical Nodes**: Trading Server—if offline, stops all revenue-generating trades.
+**Typical Infrastructure Nodes**:
+- **trading_engine**: The "Nano-Trade-Matcher" execution core.
+- **message_broker**: The "Kafkaesque Bus" for market data feeds.
+- **risk_scoring**: The "Monte-Carlo" pre-trade check.
+- **blockchain_ledger**: The "Immutable Ledger" for post-trade settlement.
+- **data_warehouse**: The "OLAP Lakehouse" for backtesting strategies.
+- **secrets_manager**: Protecting the private keys of the trading bots.
+- **monitoring_logging**: Ultra-low-overhead tracing for "Gripe" detection.
 
-#### Revenue Flow Section
-- **Typical Revenue Streams** (3-4 flows per type):
-  - **Market Making**: Node chain: Data Provider → Middleware → Trading Server → API Gateway. Typical revenue $1-2B annually (e.g., Virtu's model). Shared: Trading Server. Bottleneck: Trading Server (high but latency-sensitive).
-  - **Execution Services**: Node chain: API Gateway → Risk Database → Cloud Provider. Typical revenue $500M-$1B annually. Shared: API Gateway. Bottleneck: Risk Database.
-  - **Technology Licensing**: Node chain: Middleware → Cloud Provider. Typical revenue $100M-$300M annually. Shared: Middleware. Bottleneck: Cloud Provider.
-  - **Commissions**: Node chain: API Gateway → Trading Server. Typical revenue $200M-$500M annually. Shared: API Gateway. Bottleneck: API Gateway.
+**Typical Edge Patterns**:
+- Direct Memory Access (DMA) bypasses from **message_broker** to **trading_engine**.
+- Pre-execution check: **trading_engine** ↔ **risk_scoring** (must be < 1ms).
 
-### Payment Processors: Transaction Facilitation Giants
-Processors like Stripe and Wise show strong diversification, with hedging on global expansion risks; evidence supports API-first models for efficiency amid vendor debates. Typical annual revenue $3-5B for top players.
+**Critical Nodes**:
+- **trading_engine**: If this lags, you are trading on "Old News" (Bankrupt).
+- **risk_scoring**: If it breaks, the bots might go "Rogue" and sell the company's own building.
 
-#### Company Archetype Section
-- **Fintech Type**: Payment Processor
-- **Typical Infrastructure Nodes** (6-8 components):
-  - **API Gateway (Type: API Gateway)**: Transaction routing; high throughput, high defense, high visibility, moderate cost, high compliance. Critical path for all flows.
-  - **Auth Server (Type: Auth)**: Fraud checks; high throughput, high defense, high visibility, cheap cost, high compliance. Supporting for security.
-  - **Transaction Database (Type: Database)**: Ledger storage; high throughput, high defense, high visibility, moderate cost, high compliance. Critical path.
-  - **Cloud Provider (Type: Vendor, e.g., AWS)**: Scalable hosting; high throughput, medium defense, high visibility, expensive cost, medium compliance. Supporting.
-  - **Payment Network (Type: Vendor, e.g., Visa)**: Clearing; high throughput, high defense, medium visibility, expensive cost, high compliance. Critical path.
-  - **Middleware (Type: Middleware)**: Orchestration; high throughput, medium defense, high visibility, moderate cost, medium compliance. Supporting.
-  - **Analytics Server (Type: Server)**: Reporting; medium throughput, medium defense, high visibility, cheap cost, low compliance. Supporting.
-- **Typical Edge Patterns**: Inbound from API gateway to auth/middleware; synchronous to database; outbound to vendors for settlement.
-- **Critical Nodes**: API Gateway—if offline, blocks all transaction revenue.
+#### Archetype: The Crypto Asset Custodian
 
-#### Revenue Flow Section
-- **Typical Revenue Streams** (3-4 flows per type):
-  - **Transaction Fees**: Node chain: API Gateway → Auth Server → Payment Network → Transaction Database. Typical revenue $2-3B annually (e.g., Stripe's model). Shared: API Gateway, Database. Bottleneck: Payment Network.
-  - **Subscriptions**: Node chain: API Gateway → Middleware → Analytics Server. Typical revenue $500M-$1B annually. Shared: API Gateway. Bottleneck: Middleware.
-  - **FX Conversions**: Node chain: API Gateway → Cloud Provider → Transaction Database. Typical revenue $300M-$600M annually (e.g., Wise). Shared: Database. Bottleneck: Cloud Provider.
-  - **Value-Added Services**: Node chain: Middleware → Analytics Server → Cloud Provider. Typical revenue $200M-$500M annually. Shared: Middleware. Bottleneck: Analytics Server.
+**id**: company_crypto_vault
+**sector**: Web3 Infrastructure / Digital Assets
+**description**: You hold the keys to the kingdom. Your whole business model is "We haven't been hacked yet." A mix of cold storage and high-availability hot wallets.
 
-### Key Citations
-- [Architecture of a Neobank - Revolut | ABN Software](https://news.abnasia.org/blog/posts/en-architecture-of-a-neobank-revolut-3689)
-- [Revolut's production stack for 50M users revealed | Eyal Eshel posted on the topic | LinkedIn](https://www.linkedin.com/posts/eyaleshel_simon-taylor-just-dropped-the-real-thing-activity-7349438500900917248-08GH)
-- [Revolut's Business Model Explained: How Revolut Makes Money](https://www.suffescom.com/blog/revolut-business-model)
-- [Invest with the Market Leader | LendingClub Bank](https://www.lendingclub.com/institutional-investing/overview)
-- [Lending Club: Creating the Marketplace Lending Business Model - Digital Innovation and Transformation](https://d3.harvard.edu/platform-digit/submission/lending-club-creating-the-marketplace-lending-business-model)
-- [LendingClub - CRA Strategic Plan](https://www.occ.treas.gov/topics/consumers-and-communities/cra/lendingclub-bank.pdf)
-- [VIRTU Financial Inc.](https://www.virtu.com/)
-- [How Does Virtu Financial Company Work? - Porter's Five Forces](https://portersfiveforce.com/blogs/how-it-works/virtu)
-- [Virtu Announces Fourth Quarter 2025 Results - Investor Relations](https://ir.virtu.com/news-releases/news-release-details/virtu-announces-fourth-quarter-2025-results)
-- [Processor-Agnostic Payments: A Guide for Businesses](https://stripe.com/resources/more/processor-agnostic-payments)
-- [How payment processing works](https://stripe.com/resources/more/payment-processing-explained)
-- [Wise Tech Stack (2025 update)](https://medium.com/wise-engineering/wise-tech-stack-2025-update-d0e63fe718c7)
-- [Fintech Components: Key Tools & Infrastructure](https://www.quantumlends.com/blog/fintech-and-innovation/fintech-components-tools-infrastructure)
-- [How Should FinTech CTOs Choose a Cloud Services Provider?](https://www.techmagic.co/blog/fintech-choosing-a-cloud-services-provider)
+**Typical Infrastructure Nodes**:
+- **secrets_manager**: The "Vault" for multi-sig private keys.
+- **blockchain_ledger**: The "Blocky-Chain" for on-chain verification.
+- **auth_service**: Heavy-duty IAM with hardware token support.
+- **relational_db**: Off-chain ledger for internal user balances.
+- **kyc_aml**: Sanctions scanning to avoid the FBI’s "Most Wanted" list.
+- **api_gateway**: Exposing institutional-grade APIs.
+- **cloud_kyc**: For the biometric "Selfie Checks."
+
+**Typical Edge Patterns**:
+- Air-gapped manual triggers from **admin_dashboard** to **secrets_manager**.
+- Constant polling from **blockchain_ledger** to **relational_db** for deposit detection.
+
+**Critical Nodes**:
+- **secrets_manager**: If the keys are lost or stolen, it's "Game Over" forever.
+- **blockchain_ledger**: If out of sync, you are literally flying blind.
+
+#### Revenue Flow: Interchange Squeeze (Neobank)
+
+**id**: flow_interchange
+**revenue_type**: Transaction Commissions
+**description**: Taking a tiny sliver of every "Coffee and Avocado Toast" purchase made by your users.
+**node_chain**: api_gateway → auth_service → payment_engine → card_network → relational_db
+**annual_revenue_range**: $50M - $200M (scaled by user base)
+**shared_nodes**: auth_service, relational_db
+**bottleneck**: card_network (External latency and fees)
+
+#### Revenue Flow: The Interest Arbitrage (Lending/BNPL)
+
+**id**: flow_interest
+**revenue_type**: Net Interest Margin (NIM)
+**description**: Borrowing money cheaply and lending it to people with poor impulse control at 15% APR.
+**node_chain**: api_gateway → credit_bureau → risk_scoring → kyc_aml → relational_db → notification_service
+**annual_revenue_range**: $100M - $500M
+**shared_nodes**: relational_db, risk_scoring
+**bottleneck**: credit_bureau (Data availability and scoring accuracy)
+
+#### Revenue Flow: Market Liquidity Provision (HFT)
+
+**id**: flow_market_making
+**revenue_type**: The Spread (Arbitrage)
+**description**: Buying for $10.001 and selling for $10.002, a million times per second.
+**node_chain**: message_broker → trading_engine → risk_scoring → trading_engine → blockchain_ledger
+**annual_revenue_range**: $500M - $2B
+**shared_nodes**: trading_engine, risk_scoring
+**bottleneck**: trading_engine (Nanosecond latency is the only metric)
+
+#### Revenue Flow: "Compliance-as-a-Service" (B2B SaaS)
+
+**id**: flow_compliance_saas
+**revenue_type**: Subscription / API Licensing
+**description**: Selling your "Identity Scanning" tech to other startups that are too lazy to build their own.
+**node_chain**: api_gateway → cloud_kyc → nosql_db → admin_dashboard
+**annual_revenue_range**: $20M - $80M
+**shared_nodes**: api_gateway, cloud_kyc
+**bottleneck**: cloud_kyc (Success rate of AI document scans)
+
+#### Revenue Flow: The Asset Custody Fee
+
+**id**: flow_custody_fees
+**revenue_type**: AUM Percentage (Assets Under Management)
+**description**: Charging 50 basis points a year just to keep someone's Bitcoin safe in your "Vault."
+**node_chain**: auth_service → secrets_manager → blockchain_ledger → relational_db → data_warehouse
+**annual_revenue_range**: $30M - $150M
+**shared_nodes**: secrets_manager, relational_db
+**bottleneck**: secrets_manager (Security policy complexity)
+
+#### Revenue Flow: Cross-Border Remittance (P2P)
+
+**id**: flow_remittance
+**revenue_type**: FX Spread + Flat Fee
+**description**: Helping migrants send money home without the 10% "Old Bank" tax.
+**node_chain**: api_gateway → kyc_aml → escrow_service → payment_engine → notification_service
+**annual_revenue_range**: $40M - $120M
+**shared_nodes**: kyc_aml, payment_engine
+**bottleneck**: payment_engine (Settlement speed with local payout partners)
