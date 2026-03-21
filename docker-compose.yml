@@ -1,0 +1,24 @@
+services:
+  dashboard:
+    build: ./services/dashboard
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api-gateway
+
+  api-gateway:
+    build: ./services/api-gateway
+    ports:
+      - "8000:8000"
+    env_file: .env
+    environment:
+      HF_HUB_OFFLINE: "1"
+    volumes:
+      - ~/.cache/huggingface:/root/.cache/huggingface
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"

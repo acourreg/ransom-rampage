@@ -1,0 +1,16 @@
+{
+  "name": "ransom-rampage-dashboard",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "dependencies": {
+    "react": "^18",
+    "react-dom": "^18"
+  },
+  "devDependencies": {
+    "vite": "^5",
+    "@vitejs/plugin-react": "^4"
+  }
+}
