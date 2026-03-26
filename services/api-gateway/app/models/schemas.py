@@ -30,6 +30,11 @@ class CreateGameRequest(BaseModel):
         default="Generate a highly disruptive Fintech startup that tackles a mundane industry",
         description="Prompt for entity generation"
     )
+    shape:             Optional[str] = Field(default=None, description="Infrastructure topology shape")
+    node_count:        Optional[int] = Field(default=None, description="Number of nodes to generate")
+    threat_agent_name: Optional[str] = Field(default=None, description="Human name of the threat actor")
+    threat_agent_desc: Optional[str] = Field(default=None, description="One-liner description of the threat actor")
+    threat_agent_id:   Optional[str] = Field(default=None, description="Technical threat category ID")
 
 class TurnRequest(BaseModel):
     """Request to execute a game turn."""

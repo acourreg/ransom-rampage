@@ -1,33 +1,297 @@
 import { useState } from 'react'
+import useGame from './hooks/useGame.js'
+import NewGameScreen from './components/NewGameScreen.jsx'
+import GameOverModal from './components/GameOverModal.jsx'
+import Header from './components/Header.jsx'
 import InfraGraph from './components/InfraGraph.jsx'
-
-const MOCK_NODES = [
-  { id:'n1', name:'API Gateway',           type:'entry',      business_name:'User Entry Point',    business_category:'Operations',           revenue_exposure:69,    flows_supported:['PeerSwap','CoinSafe','QuickCash','AdCoin'], throughput:8,     defense:5,     visibility:7,     cost:3,     compliance_score:6,     compromised:false, locked:false, offline:false, fogged:false, isolated:false, has_mfa:false },
-  { id:'n2', name:'Admin Panel',           type:'human',      business_name:'Control Center',      business_category:'People & Access',       revenue_exposure:21,    flows_supported:['PeerSwap','AdCoin'],                       throughput:3,     defense:2,     visibility:5,     cost:2,     compliance_score:4,     compromised:false, locked:false, offline:false, fogged:false, isolated:false, has_mfa:false },
-  { id:'n3', name:'Payment Provider',      type:'vendor',     business_name:'Payment Hub',         business_category:'Unknown',              revenue_exposure:'???', flows_supported:[],                                          throughput:'???', defense:'???', visibility:'???', cost:'???', compliance_score:'???', compromised:false, locked:false, offline:false, fogged:true,  isolated:false, has_mfa:false },
-  { id:'n4', name:'Core Database',         type:'database',   business_name:'Data Heart',          business_category:'Revenue Critical',     revenue_exposure:30,    flows_supported:['QuickCash'],                               throughput:9,     defense:8,     visibility:5,     cost:7,     compliance_score:7,     compromised:false, locked:false, offline:false, fogged:false, isolated:false, has_mfa:false },
-  { id:'n5', name:'Transaction Server',    type:'server',     business_name:'Transaction Engine',  business_category:'Revenue Critical',     revenue_exposure:63,    flows_supported:['PeerSwap','CoinSafe','QuickCash'],          throughput:6,     defense:7,     visibility:6,     cost:5,     compliance_score:6,     compromised:false, locked:false, offline:false, fogged:false, isolated:false, has_mfa:false },
-  { id:'n6', name:'Analytics Middleware',  type:'middleware', business_name:'Insight Processor',   business_category:'Revenue Critical',     revenue_exposure:18,    flows_supported:['CoinSafe'],                                throughput:7,     defense:6,     visibility:5,     cost:4,     compliance_score:5,     compromised:false, locked:false, offline:false, fogged:false, isolated:false, has_mfa:false },
-  { id:'n7', name:'Security Middleware',   type:'middleware', business_name:'Protection Layer',    business_category:'Unknown',              revenue_exposure:'???', flows_supported:[],                                          throughput:'???', defense:'???', visibility:'???', cost:'???', compliance_score:'???', compromised:false, locked:false, offline:false, fogged:true,  isolated:false, has_mfa:false },
-]
-const MOCK_EDGES = [
-  {from:'n1',to:'n4'},{from:'n1',to:'n5'},{from:'n2',to:'n6'},
-  {from:'n3',to:'n5'},{from:'n4',to:'n5'},{from:'n4',to:'n6'},
-  {from:'n4',to:'n7'},{from:'n6',to:'n7'},{from:'n7',to:'n5'}
-]
+import TriageBoard from './components/TriageBoard.jsx'
+import StrategyPanel from './components/StrategyPanel.jsx'
+import WarRoom from './components/WarRoom.jsx'
 
 export default function App() {
-  const [selected, setSelected] = useState(null)
+  const {
+    sessionId, gameState, advisorRecs,
+    loading, error, gameOver, gameOverReason,
+    showIntro, dismissIntro,
+    startGame, commitTurn, resetGame
+  } = useGame()
+
+  // selectedActions: queued actions (max 2 CTO, or 1 advisor that replaces all)
+  const [selectedActions, setSelectedActions] = useState([])
+  const [selectedTarget, setSelectedTarget]   = useState(null)
+  const [selectingTarget, setSelectingTarget] = useState(false)
+  const [pendingAction, setPendingAction]     = useState(null)
+
+  function handleNodeSelect(node) {
+    if (selectingTarget && pendingAction) {
+      // Action-first flow: associate clicked node with the pending queued action
+      setSelectedActions(prev => prev.map(a =>
+        a.id === pendingAction.id && a.source === 'cto'
+          ? { ...a, resolvedTarget: node.id, targetNode: node }
+          : a
+      ))
+      setPendingAction(null)
+      setSelectingTarget(false)
+    } else if (selectingTarget) {
+      setSelectedTarget(node)
+      setSelectingTarget(false)
+    } else if (node === null) {
+      setSelectedTarget(null)
+    } else {
+      setSelectedTarget(node)
+    }
+  }
+
+  function handleSelectAdvisor(rec) {
+    if (rec === null) {
+      setSelectedActions(prev => prev.filter(a => a.source !== 'ciso' && a.source !== 'sre'))
+    } else {
+      // Accepting an advisor = clear everything (including CTO queue) and commit to this path
+      setSelectedActions([rec])
+      setPendingAction(null)
+      setSelectingTarget(false)
+      setSelectedTarget(null)
+      console.log('[ADVISOR ACCEPT]', rec.id, '→', rec.target)
+    }
+  }
+
+  function handleSelectCto(action, nodeId) {
+    if (action === null) {
+      setSelectedActions(prev => prev.filter(a => {
+        if (a.source !== 'cto') return true
+        return nodeId === '_global' ? !!a.resolvedTarget : a.resolvedTarget !== nodeId
+      }))
+      return
+    }
+    const withTarget = nodeId === '_global'
+      ? action
+      : { ...action, resolvedTarget: nodeId, targetNode: gameState?.nodes?.find(n => n.id === nodeId) }
+
+    setSelectedActions(prev => {
+      const alreadySelected = prev.some(a =>
+        a.id === action.id &&
+        (nodeId === '_global' ? !a.resolvedTarget : a.resolvedTarget === nodeId)
+      )
+      if (alreadySelected) {
+        return prev.filter(a => !(a.id === action.id &&
+          (nodeId === '_global' ? !a.resolvedTarget : a.resolvedTarget === nodeId)))
+      }
+      const advisors = prev.filter(a => a.source !== 'cto')
+      const ctos = prev.filter(a => a.source === 'cto')
+      return [...advisors, ...ctos, withTarget]
+    })
+  }
+
+  async function handleCommit() {
+    if (selectedActions.length === 0) return
+
+    // Advisor always wins — if the player clicked Accept on an advisor,
+    // that's their intent regardless of what's in the CTO queue.
+    const advisorAction = selectedActions.find(a => a.source === 'ciso' || a.source === 'sre')
+    const ctoAction     = selectedActions.find(a => a.source === 'cto')
+    const primary       = advisorAction ?? ctoAction
+
+    if (!primary) return
+
+    const targetId = primary.source === 'cto' && primary.targetRequired
+      ? (primary.resolvedTarget ?? null)
+      : (primary.target ?? null)
+
+    if (primary.source === 'cto' && primary.targetRequired && !targetId) {
+      console.warn('[COMMIT] CTO action requires target — not resolved yet:', primary.label)
+      return
+    }
+
+    console.log('[COMMIT] →', primary.id, 'target:', targetId, 'source:', primary.source)
+    await commitTurn(primary.id, targetId)
+    setSelectedActions([])
+    setPendingAction(null)
+    setSelectedTarget(null)
+    setSelectingTarget(false)
+  }
+
+  function handleReset() {
+    resetGame()
+    setSelectedActions([])
+    setPendingAction(null)
+    setSelectedTarget(null)
+    setSelectingTarget(false)
+  }
+
+  // Pre-game
+  if (!sessionId) {
+    return <NewGameScreen onGenerate={startGame} loading={loading} />
+  }
+
   return (
-    <div style={{ padding: '2rem', background: '#F8FAFC', minHeight: '100vh' }}>
-      <h2 style={{ fontFamily: 'Inter', fontWeight: 600, marginBottom: '1rem', color: '#0F172A' }}>
-        InfraGraph — FE-2 Test
-      </h2>
-      <InfraGraph nodes={MOCK_NODES} edges={MOCK_EDGES} selectingTarget={false} onNodeSelect={setSelected} />
-      {selected && (
-        <p style={{ marginTop: '1rem', fontFamily: 'JetBrains Mono', fontSize: '0.8rem', color: '#64748B' }}>
-          onNodeSelect fired: {selected.name}
-        </p>
+    <div style={{ display:'flex', flexDirection:'column', height:'100vh', background:'#F8FAFC', overflow:'hidden' }}>
+      <Header company={gameState?.company} nodes={gameState?.nodes ?? []} flows={gameState?.flows ?? []} />
+
+      {/* Ticker bar */}
+      <TriageBoard gameState={gameState} />
+
+      {error && (
+        <div style={{ background:'#FEF2F2', borderBottom:'1px solid #EF4444', padding:'6px 1.5rem', fontFamily:'JetBrains Mono', fontSize:11, color:'#EF4444', flexShrink:0 }}>
+          ⚠ Error: {error}
+        </div>
+      )}
+
+      {/* 2 colonnes : [Graph + WarRoom] + StrategyPanel */}
+      <div style={{ display:'flex', flex:1, overflow:'hidden' }}>
+
+        {/* Colonne gauche : graph + incident response empilés */}
+        <div style={{ flex:1, display:'flex', flexDirection:'column', overflow:'hidden' }}>
+          <div style={{
+            flex: 1, padding: '0.25rem 1rem 1rem', overflowY: 'auto', overflowX: 'hidden',
+            background: '#F2EDE4',
+            backgroundImage: 'linear-gradient(30deg, rgba(160,145,125,0.45) 1px, transparent 1px), linear-gradient(150deg, rgba(160,145,125,0.45) 1px, transparent 1px), linear-gradient(30deg, rgba(160,145,125,0.18) 1px, transparent 1px), linear-gradient(150deg, rgba(160,145,125,0.18) 1px, transparent 1px)',
+            backgroundSize: '80px 46px, 80px 46px, 20px 12px, 20px 12px',
+          }}>
+            <InfraGraph
+              nodes={gameState?.nodes ?? []}
+              edges={gameState?.edges ?? []}
+              vulnerabilities={gameState?.vulnerabilities ?? []}
+              selectingTarget={selectingTarget}
+              onNodeSelect={handleNodeSelect}
+              onDeselect={() => setSelectedTarget(null)}
+            />
+          </div>
+
+          <WarRoom
+            turnLog={gameState?.turn_log ?? []}
+            turn={gameState?.company?.turn ?? 1}
+            loading={loading}
+            adversaryName={gameState?.company?.adversary}
+          />
+        </div>
+
+        {/* Colonne droite : StrategyPanel seul */}
+        <StrategyPanel
+          advisorRecs={advisorRecs}
+          gameState={gameState}
+          selectedActions={selectedActions}
+          selectedTarget={selectedTarget}
+          selectingTarget={selectingTarget}
+          loading={loading}
+          turn={gameState?.company?.turn ?? 1}
+          forceAudit={(gameState?.company?.compliance ?? 1) < 0.5}
+          vulnerabilities={gameState?.vulnerabilities ?? []}
+          onSelectAdvisor={handleSelectAdvisor}
+          onSelectCto={handleSelectCto}
+          onStartTargetSelect={() => setSelectingTarget(true)}
+          onCommit={handleCommit}
+        />
+      </div>
+
+      {gameOver && (
+        <GameOverModal
+          gameState={gameState}
+          gameOverReason={gameOverReason}
+          onReset={handleReset}
+        />
+      )}
+
+      {sessionId && showIntro && gameState && (
+        <div style={{
+          position: 'fixed', inset: 0,
+          background: 'rgba(15,23,42,0.85)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 500, fontFamily: 'Inter',
+        }}>
+          <div style={{
+            background: '#FFFFFF', borderRadius: 12,
+            maxWidth: 520, width: '90%',
+            boxShadow: '0 24px 64px rgba(0,0,0,0.4)',
+            overflow: 'hidden',
+          }}>
+            {/* Header */}
+            <div style={{
+              background: 'linear-gradient(135deg, #1E3A5F 0%, #1E293B 60%, #0F172A 100%)',
+              borderBottom: '1px solid #2563EB',
+              padding: '24px 28px',
+              display: 'flex', alignItems: 'center', gap: 16,
+            }}>
+              <div style={{
+                width: 48, height: 48, borderRadius: 8,
+                background: 'rgba(37,99,235,0.25)',
+                border: '1px solid rgba(37,99,235,0.4)',
+                display: 'flex',
+                alignItems: 'center', justifyContent: 'center',
+                fontSize: 24,
+              }}>
+                🏦
+              </div>
+              <div>
+                <div style={{ fontWeight: 800, fontSize: 20, color: '#F1F5F9', letterSpacing: -0.5 }}>
+                  {gameState.company.name}
+                </div>
+                <div style={{ fontSize: 12, color: '#64748B', marginTop: 2, textTransform: 'uppercase', letterSpacing: 1 }}>
+                  {gameState.company.sector}
+                </div>
+                <div style={{ fontSize: 11, color: '#EF4444', marginTop: 4 }}>
+                  ⚠ Threat detected: <strong>{gameState.company.adversary}</strong>
+                </div>
+                {gameState.company.adversary_desc && (
+                  <div style={{ fontSize: 10, color: '#94A3B8', marginTop: 2, fontStyle: 'italic' }}>
+                    "{gameState.company.adversary_desc}"
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Body */}
+            <div style={{ padding: '24px 28px' }}>
+              <p style={{
+                fontSize: 15, lineHeight: 1.7, color: '#334155',
+                fontStyle: 'italic', marginBottom: 20,
+                borderLeft: '3px solid #E2E8F0', paddingLeft: 16,
+              }}>
+                "{gameState.company.intro ?? `${gameState.company.name} — good luck with that.`}"
+              </p>
+
+              {/* Quick stats */}
+              <div style={{ display: 'flex', gap: 12, marginBottom: 24 }}>
+                {[
+                  { label: 'Cash Runway',    value: `€${(gameState.company.cash / 1000).toFixed(1)}M` },
+                  { label: 'Infrastructure', value: `${gameState.nodes.length} nodes` },
+                  { label: 'Threat Level',   value: gameState.company.adversary?.replace('_', ' ') ?? '?' },
+                ].map(({ label, value }) => (
+                  <div key={label} style={{
+                    flex: 1, background: '#F8FAFC', borderRadius: 8,
+                    padding: '10px 12px', textAlign: 'center',
+                    border: '1px solid #E2E8F0',
+                  }}>
+                    <div style={{ fontSize: 9, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>
+                      {label}
+                    </div>
+                    <div style={{ fontFamily: 'JetBrains Mono', fontSize: 13, fontWeight: 700, color: '#0F172A' }}>
+                      {value}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* CTA */}
+              <button
+                onClick={dismissIntro}
+                style={{
+                  width: '100%', padding: '14px',
+                  background: 'linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)',
+                  boxShadow: '0 4px 16px rgba(37,99,235,0.35)',
+                  color: '#FFFFFF',
+                  border: 'none', borderRadius: 8,
+                  fontFamily: 'Inter', fontWeight: 700, fontSize: 14,
+                  cursor: 'pointer', letterSpacing: 0.3,
+                }}
+              >
+                ⚡ Start Simulation — Turn 1 / 10
+              </button>
+              <p style={{ textAlign: 'center', fontSize: 11, color: '#94A3B8', marginTop: 10, marginBottom: 0 }}>
+                A hacker is already scanning your perimeter.
+              </p>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )
