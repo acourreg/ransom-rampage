@@ -48,7 +48,7 @@ export default function GameOverModal({ gameState, gameOverReason, onReset }) {
                   ['Board Trust',             `${Math.round(company.reputation * 100)}%`],
                   ['Legal Status',            compliance.label],
                   ['Revenue Streams Active',  `${activeFlows} / ${flows.length}`],
-                  ['Turns Survived',          `${company.turn} / 10`],
+                  ['Turns Survived',          `${company.turn} / ${company.max_turns ?? 10}`],
                 ].map(([label, val]) => statRow(label, val))}
               </>
             ) : (

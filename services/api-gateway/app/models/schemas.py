@@ -19,6 +19,10 @@ class AgentRecommendation(BaseModel):
     action_description: str
     cost: int = 0
     mutations: List[Dict[str, Any]] = Field(default_factory=list)
+    policy_id:      Optional[str] = None
+    scope:          Optional[str] = None
+    duration_turns: Optional[int] = None
+    cto_pitch:      Optional[str] = None
 
 # ============================================================
 # API Request/Response Models
@@ -36,10 +40,16 @@ class CreateGameRequest(BaseModel):
     threat_agent_desc: Optional[str] = Field(default=None, description="One-liner description of the threat actor")
     threat_agent_id:   Optional[str] = Field(default=None, description="Technical threat category ID")
 
+class CtoAction(BaseModel):
+    """A single CTO action in the multi-action payload."""
+    action_id: str
+    target: Optional[str] = None
+
 class TurnRequest(BaseModel):
     """Request to execute a game turn."""
-    action_id: str = Field(description="Action ID (C1-C6, S1-S4, etc.)")
+    action_id: str = Field(description="Primary action (advisor or solo CTO if no cto_actions)")
     target: Optional[str] = Field(default=None, description="Optional target node_id")
+    cto_actions: List[CtoAction] = Field(default_factory=list, description="Additional CTO actions executed alongside primary")
 
 class GameResponse(BaseModel):
     """Response with game state (fog-filtered)."""

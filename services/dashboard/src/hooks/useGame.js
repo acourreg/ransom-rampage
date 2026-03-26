@@ -28,12 +28,12 @@ export default function useGame() {
     }
   }, [])
 
-  const commitTurn = useCallback(async (actionId, target) => {
+  const commitTurn = useCallback(async (actionId, target, ctoActions = []) => {
     if (!sessionId) return
     setLoading(true)
     setAdvisorRecs(null)
     try {
-      const res = await playTurn(sessionId, actionId, target)
+      const res = await playTurn(sessionId, actionId, target, ctoActions)
       setGameState(res.state)
       if (res.game_over) {
         setGameOver(true)

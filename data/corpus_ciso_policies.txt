@@ -1,0 +1,1749 @@
+CORPUS 1 — CISO Strategic Policies
+
+#### [Zero-Trust-Network-Access]
+
+**id**: `ztna_implementation`
+**category**: `security_architecture`
+**subcategory**: `zero_trust`
+**source**: `NIST SP 800-207`
+**applies_when**: `any node compromised or human node has_mfa = false`
+
+**description**: Trusting your employees is a quaint 20th-century concept we can no longer afford. This policy assumes the call is coming from inside the house and demands a passport check at every hallway.
+
+**game_effects**:
+  node_targets: `all`
+  metrics_delta:
+    - metric: `defense`
+      delta: `+3`
+      condition: `always`
+    - metric: `throughput`
+      delta: `-1`
+      condition: `always`
+  company_delta:
+    - metric: `compliance`
+      delta: `+0.2`
+      condition: `always`
+  duration_turns: `permanent`
+  activation_cost_eur_k: `250`
+  recurring_cost_eur_k_per_turn: `15`
+
+**trade_offs**:
+  upside: Eliminates lateral movement by treating every request as hostile.
+  downside: Developers will complain about the extra three seconds of latency and the loss of their "freedom."
+  revenue_risk: `low`
+
+**cto_pitch**: We stop a single compromised laptop from liquidating the company's entire data center for only €15k a turn.
+
+**tags**: `zero_trust, lateral_movement, defense_in_depth`
+
+---
+
+#### [Micro-Segmentation-Silos]
+
+**id**: `micro_segmentation_isolation`
+**category**: `network_security`
+**subcategory**: `segmentation`
+**source**: `CIS Controls v8`
+**applies_when**: `entry node defense < 4 or breach_timer > 0`
+
+**description**: Architecture designed to ensure that if the kitchen catches fire, it doesn't melt the server room. It’s basic plumbing, yet somehow revolutionary to our DevOps team.
+
+**game_effects**:
+  node_targets: `middleware | database | server`
+  metrics_delta:
+    - metric: `isolated`
+      delta: `set:true`
+      condition: `if_compromised`
+    - metric: `defense`
+      delta: `+4`
+      condition: `always`
+  company_delta:
+    - metric: `breach_timer`
+      delta: `-2`
+      condition: `if_breach_active`
+  duration_turns: `5`
+  activation_cost_eur_k: `180`
+  recurring_cost_eur_k_per_turn: `10`
+
+**trade_offs**:
+  upside: Hardens the core infrastructure against rapid infection spread.
+  downside: Significant administrative overhead when you realize nobody documented which service talks to what.
+  revenue_risk: `moderate`
+
+**cto_pitch**: This adds a 40% buffer to our breach survival time by physically isolating the blast radius of an attack.
+
+**tags**: `ransomware, lateral_movement, containment`
+
+---
+
+#### [Hardware-MFA-Mandate]
+
+**id**: `biometric_hardware_mfa`
+**category**: `identity_access_management`
+**subcategory**: `mfa`
+**source**: `NIST CSF 2.0`
+**applies_when**: `human node has_mfa = false`
+
+**description**: Because SMS codes are essentially an invitation for a teenager in a basement to ruin our fiscal year. We’re moving to hardware keys because users can’t be trusted with their own passwords.
+
+**game_effects**:
+  node_targets: `human`
+  metrics_delta:
+    - metric: `has_mfa`
+      delta: `set:true`
+      condition: `always`
+    - metric: `defense`
+      delta: `+5`
+      condition: `always`
+  company_delta:
+    - metric: `compliance`
+      delta: `+0.3`
+      condition: `always`
+  duration_turns: `permanent`
+  activation_cost_eur_k: `120`
+  recurring_cost_eur_k_per_turn: `5`
+
+**trade_offs**:
+  upside: Practically eliminates phishing as a viable entry vector for your "C-suite."
+  downside: The CEO will lose their key exactly four minutes before an earnings call.
+  revenue_risk: `none`
+
+**cto_pitch**: For €120k, we delete the "credential theft" line item from our risk register.
+
+**tags**: `phishing, mfa, identity, human_factor`
+
+---
+
+#### [EDR-Swarm-Deployment]
+
+**id**: `edr_managed_protection`
+**category**: `endpoint_security`
+**subcategory**: `edr`
+**source**: `ISO 27001`
+**applies_when**: `Byte AP >= 2 and no detection`
+
+**description**: A proactive watchdog that watches the watchers. It monitors every process on every laptop, looking for that one "harmless" script that's actually trying to encrypt the payroll.
+
+**game_effects**:
+  node_targets: `entry | server`
+  metrics_delta:
+    - metric: `visibility`
+      delta: `+4`
+      condition: `always`
+    - metric: `defense`
+      delta: `+2`
+      condition: `always`
+  company_delta:
+    - metric: `reputation`
+      delta: `+10`
+      condition: `if_breach_active`
+  duration_turns: `3`
+  activation_cost_eur_k: `150`
+  recurring_cost_eur_k_per_turn: `20`
+
+**trade_offs**:
+  upside: Gives us the eyes to see an intruder before they start the "data delete" phase.
+  downside: Generates enough false positives to keep three junior analysts in a state of permanent panic.
+  revenue_risk: `low`
+
+**cto_pitch**: We gain 100% visibility on entry points for €20k/turn, preventing a total PR meltdown during a breach.
+
+**tags**: `visibility, detection, edr, proactive`
+
+---
+
+#### [Adversarial-Threat-Hunting]
+
+**id**: `proactive_threat_hunting`
+**category**: `security_operations`
+**subcategory**: `threat_hunting`
+**source**: `CIS Controls v8`
+**applies_when**: `visibility < 3 or vendor node fogged`
+
+**description**: Sending highly paid specialists into the dark corners of our network to find the ghosts we missed. It’s like an audit, but with more caffeine and fewer spreadsheets.
+
+**game_effects**:
+  node_targets: `all`
+  metrics_delta:
+    - metric: `fogged`
+      delta: `set:false`
+      condition: `always`
+    - metric: `visibility`
+      delta: `+3`
+      condition: `if_fogged`
+  company_delta:
+    - metric: `breach_timer`
+      delta: `-3`
+      condition: `if_breach_active`
+  duration_turns: `2`
+  activation_cost_eur_k: `90`
+  recurring_cost_eur_k_per_turn: `0`
+
+**trade_offs**:
+  upside: Uncovers dormant malware before it triggers, effectively buying us time.
+  downside: You might not like what they find in the legacy middleware.
+  revenue_risk: `none`
+
+**cto_pitch**: We find the intruders before they find our money. Cuts breach duration by 3 turns.
+
+**tags**: `fog_of_war, threat_hunting, detection`
+
+---
+
+#### [Deception-Canary-Tokens]
+
+**id**: `deception_technology_deployment`
+**category**: `defense`
+**subcategory**: `honeypots`
+**source**: `NIST CSF`
+**applies_when**: `breach_timer > 0`
+
+**description**: Planting digital landmines that look like high-value databases. When an attacker touches one, we get a notification and they get a whole lot of nothing.
+
+**game_effects**:
+  node_targets: `database`
+  metrics_delta:
+    - metric: `visibility`
+      delta: `+5`
+      condition: `if_compromised`
+    - metric: `defense`
+      delta: `+1`
+      condition: `always`
+  company_delta:
+    - metric: `breach_timer`
+      delta: `+2`
+      condition: `always`
+  duration_turns: `4`
+  activation_cost_eur_k: `60`
+  recurring_cost_eur_k_per_turn: `2`
+
+**trade_offs**:
+  upside: High-fidelity alerts with zero false positives—nobody "accidentally" logs into a honey-pot.
+  downside: Only works if the attacker is looking for the wrong things.
+  revenue_risk: `none`
+
+**cto_pitch**: Buys us an extra 2 turns of response time for a negligible €2k/turn.
+
+**tags**: `deception, visibility, breach_delay`
+
+---
+
+#### [Unified-Log-Ingestion]
+
+**id**: `siem_log_aggregation`
+**category**: `visibility`
+**subcategory**: `siem`
+**source**: `ISO 27001`
+**applies_when**: `visibility < 4`
+
+**description**: Collecting every digital crumb dropped across the estate. It's like having a CCTV camera on every packet, provided you can afford the storage bill.
+
+**game_effects**:
+  node_targets: `all`
+  metrics_delta:
+    - metric: `visibility`
+      delta: `+4`
+      condition: `always`
+    - metric: `compliance_score`
+      delta: `+0.2`
+      condition: `always`
+  company_delta:
+    - metric: `compliance`
+      delta: `+0.1`
+      condition: `always`
+  duration_turns: `permanent`
+  activation_cost_eur_k: `200`
+  recurring_cost_eur_k_per_turn: `30`
+
+**trade_offs**:
+  upside: We finally know what happened *after* the disaster strikes.
+  downside: The cloud storage providers will name their next yacht after us.
+  revenue_risk: `low`
+
+**cto_pitch**: This move scales our regulatory compliance and doubles our incident visibility.
+
+**tags**: `visibility, siem, logging, compliance`
+
+---
+
+#### [Incident-Response-Retainer]
+
+**id**: `ir_retainer_activation`
+**category**: `incident_response`
+**subcategory**: `governance`
+**source**: `NIST CSF 2.0`
+**applies_when**: `breach_timer > 1`
+
+**description**: Buying a "Get Out of Jail" card before you actually go to jail. It ensures that when the sirens go off, the smartest people in the room aren't us.
+
+**game_effects**:
+  node_targets: `compromised`
+  metrics_delta:
+    - metric: `defense`
+      delta: `+5`
+      condition: `if_compromised`
+  company_delta:
+    - metric: `breach_timer`
+      delta: `reset`
+      condition: `always`
+    - metric: `reputation`
+      delta: `+15`
+      condition: `always`
+  duration_turns: `1`
+  activation_cost_eur_k: `300`
+  recurring_cost_eur_k_per_turn: `0`
+
+**trade_offs**:
+  upside: Immediate restoration of services and PR stability during a crisis.
+  downside: It costs more than a small Caribbean island for a single day of work.
+  revenue_risk: `none`
+
+**cto_pitch**: We pay €300k now to stop a €10M hemorrhage. One-time reset of any active breach.
+
+**tags**: `incident_response, recovery, reputation`
+
+---
+
+#### [Vulnerability-Life-Cycle-Management]
+
+**id**: `continuous_vuln_scanning`
+**category**: `governance`
+**subcategory**: `vulnerability`
+**source**: `CIS Controls v8`
+**applies_when**: `entry node defense < 5`
+
+**description**: A never-ending cycle of finding holes and asking why they weren't patched three months ago. It's digital hygiene, and yes, it’s just as exciting as brushing your teeth.
+
+**game_effects**:
+  node_targets: `server | entry`
+  metrics_delta:
+    - metric: `defense`
+      delta: `+2`
+      condition: `always`
+    - metric: `visibility`
+      delta: `+2`
+      condition: `always`
+  company_delta:
+    - metric: `compliance`
+      delta: `+0.2`
+      condition: `always`
+  duration_turns: `permanent`
+  activation_cost_eur_k: `110`
+  recurring_cost_eur_k_per_turn: `8`
+
+**trade_offs**:
+  upside: Reduces the number of "low-hanging fruit" entry points for attackers.
+  downside: The engineering team will hate us for filling their Jira board with "urgent" fixes.
+  revenue_risk: `low`
+
+**cto_pitch**: We reduce our attack surface by 40% and stay ahead of regulatory fines.
+
+**tags**: `vulnerability, patching, hygiene`
+
+---
+
+#### [Privilege-Pruning-Review]
+
+**id**: `access_privilege_review`
+**category**: `iam`
+**subcategory**: `governance`
+**source**: `ISO 27001`
+**applies_when**: `compliance < 0.5`
+
+**description**: Removing "Admin" rights from people who think a browser extension is a critical business tool. It's amazing how much safer we are when people can't touch things they don't understand.
+
+**game_effects**:
+  node_targets: `human | database`
+  metrics_delta:
+    - metric: `defense`
+      delta: `+3`
+      condition: `always`
+    - metric: `compliance_score`
+      delta: `+0.3`
+      condition: `always`
+  company_delta:
+    - metric: `cash`
+      delta: `+5`
+      condition: `always`
+  duration_turns: `3`
+  activation_cost_eur_k: `40`
+  recurring_cost_eur_k_per_turn: `0`
+
+**trade_offs**:
+  upside: Drastically reduces the risk of accidental (or intentional) data deletion.
+  downside: You'll have to explain to the Marketing VP why they can't install a "Coupon Scraper."
+  revenue_risk: `none`
+
+**cto_pitch**: Zero-cost defense boost that also streamlines our compliance audit.
+
+**tags**: `iam, least_privilege, insider_threat`
+
+---
+
+#### [Edge-Shield-WAF]
+
+**id**: `waf_ddos_protection`
+**category**: `network_security`
+**subcategory**: `waf`
+**source**: `Cloudflare/Akamai Best Practices`
+**applies_when**: `entry node defense < 3`
+
+**description**: A digital bouncer for our web traffic. It filters out the bots, the scrapers, and the SQL injection attempts before they even touch our servers.
+
+**game_effects**:
+  node_targets: `entry`
+  metrics_delta:
+    - metric: `defense`
+      delta: `+5`
+      condition: `always`
+    - metric: `throughput`
+      delta: `+1`
+      condition: `always`
+  company_delta:
+    - metric: `reputation`
+      delta: `+5`
+      condition: `always`
+  duration_turns: `permanent`
+  activation_cost_eur_k: `140`
+  recurring_cost_eur_k_per_turn: `12`
+
+**trade_offs**:
+  upside: Keeps the site up during a DDoS and blocks script kiddies.
+  downside: Occasionally blocks a legitimate customer from Belgium for no apparent reason.
+  revenue_risk: `low`
+
+**cto_pitch**: Keeps the "Open for Business" sign on even during an attack. Increases uptime reputation.
+
+**tags**: `waf, ddos, availability`
+
+---
+
+#### [Immutable-Vault-Backups]
+
+**id**: `immutable_backup_strategy`
+**category**: `data_protection`
+**subcategory**: `backups`
+**source**: `NIST CSF 2.0`
+**applies_when**: `database node visible and unprotected`
+
+**description**: Backups that can't be deleted, even by an admin. It’s the ultimate insurance policy against ransomware: "Go ahead, encrypt our live data. We have yesterday's version locked in a box you can't touch."
+
+**game_effects**:
+  node_targets: `database`
+  metrics_delta:
+    - metric: `defense`
+      delta: `+1`
+      condition: `always`
+  company_delta:
+    - metric: `breach_timer`
+      delta: `-5`
+      condition: `if_breach_active`
+    - metric: `insurance_active`
+      delta: `set:true`
+      condition: `always`
+  duration_turns: `permanent`
+  activation_cost_eur_k: `200`
+  recurring_cost_eur_k_per_turn: `25`
+
+**trade_offs**:
+  upside: Makes ransomware threats toothless regarding data loss.
+  downside: Storing "immutability" is surprisingly expensive and takes longer to restore than a standard copy.
+  revenue_risk: `moderate`
+
+**cto_pitch**: The only 100% guarantee against permanent data loss. Worth every cent of the €25k/turn fee.
+
+**tags**: `ransomware, recovery, data_integrity`
+
+---
+
+#### [Ransomware-Kill-Switch-Playbook]
+
+**id**: `ransomware_response_plan`
+**category**: `incident_response`
+**subcategory**: `playbook`
+**source**: `CISA Ransomware Guide`
+**applies_when**: `breach_timer > 0`
+
+**description**: A pre-approved set of actions to take when the screen goes red. No debating, no meetings—just cutting the lines and saving what we can.
+
+**game_effects**:
+  node_targets: `all`
+  metrics_delta:
+    - metric: `isolated`
+      delta: `set:true`
+      condition: `always`
+  company_delta:
+    - metric: `cash`
+      delta: `-100`
+      condition: `always`
+    - metric: `breach_timer`
+      delta: `-4`
+      condition: `always`
+  duration_turns: `1`
+  activation_cost_eur_k: `50`
+  recurring_cost_eur_k_per_turn: `0`
+
+**trade_offs**:
+  upside: Rapidly stops the bleeding and prevents total company collapse.
+  downside: You're basically turning the company off for a few hours.
+  revenue_risk: `high`
+
+**cto_pitch**: A desperate move for desperate times. Saves the company's life at the cost of today's revenue.
+
+**tags**: `ransomware, containment, emergency`
+
+---
+
+#### [Supply-Chain-Transparency-Audit]
+
+**id**: `vendor_risk_audit`
+**category**: `third_party_risk`
+**subcategory**: `governance`
+**source**: `ISO 27001`
+**applies_when**: `vendor node fogged`
+
+**description**: Asking our partners if they actually have a security team or if it's just two interns and a dog. We need to know if their mess is about to become our mess.
+
+**game_effects**:
+  node_targets: `vendor`
+  metrics_delta:
+    - metric: `visibility`
+      delta: `+5`
+      condition: `always`
+    - metric: `fogged`
+      delta: `set:false`
+      condition: `always`
+  company_delta:
+    - metric: `compliance`
+      delta: `+0.1`
+      condition: `always`
+  duration_turns: `3`
+  activation_cost_eur_k: `70`
+  recurring_cost_eur_k_per_turn: `0`
+
+**trade_offs**:
+  upside: Identifies the weakest link in our chain before it breaks.
+  downside: Vendors will send back 400-page PDFs that nobody has time to read.
+  revenue_risk: `none`
+
+**cto_pitch**: We clear the fog of war on our 3rd party risks for €70k. No surprises.
+
+**tags**: `vendor, supply_chain, visibility`
+
+---
+
+#### [Deepfake-Social-Engineering-Shield]
+
+**id**: `human_verification_protocol`
+**category**: `security_awareness`
+**subcategory**: `social_engineering`
+**source**: `SANS Institute`
+**applies_when**: `human node has_mfa = false`
+
+**description**: Training the finance team not to wire €5M to "the CEO" just because he sounds like he's in a hurry on a Zoom call. It's essentially teaching common sense in an age of AI.
+
+**game_effects**:
+  node_targets: `human`
+  metrics_delta:
+    - metric: `defense`
+      delta: `+4`
+      condition: `always`
+  company_delta:
+    - metric: `cash`
+      delta: `+50`
+      condition: `if_breach_active`
+    - metric: `reputation`
+      delta: `+5`
+      condition: `always`
+  duration_turns: `permanent`
+  activation_cost_eur_k: `40`
+  recurring_cost_eur_k_per_turn: `2`
+
+**trade_offs**:
+  upside: Cheap and effective way to stop the most common form of modern fraud.
+  downside: Users will still click the link if you promise them a free pizza.
+  revenue_risk: `none`
+
+**cto_pitch**: Protects against the "CEO Fraud" scenario. High ROI for very low turn cost.
+
+**tags**: `social_engineering, deepfake, human_factor`
+
+---
+
+#### [GDPR-72h-Compliance-Drill]
+
+**id**: `regulatory_breach_reporting`
+**category**: `compliance`
+**subcategory**: `legal`
+**source**: `GDPR Article 33`
+**applies_when**: `compliance < 0.5 and breach_timer > 0`
+
+**description**: A high-speed race to tell the regulators we've been hacked before they find out on Twitter. It's the difference between a slap on the wrist and a fine that bankrupts us.
+
+**game_effects**:
+  node_targets: `all`
+  metrics_delta:
+    - metric: `compliance_score`
+      delta: `+0.5`
+      condition: `always`
+  company_delta:
+    - metric: `compliance`
+      delta: `set:1.0`
+      condition: `always`
+    - metric: `cash`
+      delta: `-200`
+      condition: `if_compliance_lt_0.5`
+  duration_turns: `1`
+  activation_cost_eur_k: `150`
+  recurring_cost_eur_k_per_turn: `0`
+
+**trade_offs**:
+  upside: Prevents catastrophic regulatory fines (up to 4% of global turnover).
+  downside: Admitting failure publicly is never a great look for the share price.
+  revenue_risk: `moderate`
+
+**cto_pitch**: Avoids the "Nuclear Option" from regulators. Keeps us legal during a crisis.
+
+**tags**: `compliance, gdpr, legal, risk_mitigation`
+
+---
+
+#### [Red-Team-Adversarial-Simulation]
+
+**id**: `adversarial_penetration_test`
+**category**: `offensive_security`
+**subcategory**: `red_team`
+**source**: `CREST / TIBER-EU`
+**applies_when**: `defense > 6`
+
+**description**: Hiring "friendly" hackers to break into our systems and tell us how terrible our security is. It’s expensive, ego-bruising, and absolutely necessary.
+
+**game_effects**:
+  node_targets: `all`
+  metrics_delta:
+    - metric: `visibility`
+      delta: `+5`
+      condition: `always`
+    - metric: `defense`
+      delta: `+3`
+      condition: `always`
+  company_delta:
+    - metric: `breach_timer`
+      delta: `+3`
+      condition: `if_breach_active`
+  duration_turns: `2`
+  activation_cost_eur_k: `130`
+  recurring_cost_eur_k_per_turn: `0`
+
+**trade_offs**:
+  upside: Finds the "unfindable" holes before the bad guys do.
+  downside: They will definitely find a way in, and your engineers will definitely be annoyed.
+  revenue_risk: `low`
+
+**cto_pitch**: We pay €130k to find our weaknesses now, or pay millions later when the Russians find them.
+
+**tags**: `red_team, pentest, validation`
+
+---
+
+#### [Insider-Anomaly-Detection]
+
+**id**: `ueba_behavioral_analytics`
+**category**: `security_operations`
+**subcategory**: `insider_threat`
+**source**: `CIS Controls v8`
+**applies_when**: `human node has_mfa = true and breach_timer > 0`
+
+**description**: Watching if the quiet dev in the corner suddenly starts downloading the entire customer database at 3 AM. It’s not spying; it’s "behavioral analysis."
+
+**game_effects**:
+  node_targets: `human`
+  metrics_delta:
+    - metric: `visibility`
+      delta: `+4`
+      condition: `always`
+    - metric: `defense`
+      delta: `+2`
+      condition: `always`
+  company_delta:
+    - metric: `reputation`
+      delta: `+10`
+      condition: `if_breach_active`
+  duration_turns: `5`
+  activation_cost_eur_k: `160`
+  recurring_cost_eur_k_per_turn: `15`
+
+**trade_offs**:
+  upside: Detects the "disgruntled employee" or "stolen session" scenarios perfectly.
+  downside: Requires a level of surveillance that makes the Legal team sweat.
+  revenue_risk: `none`
+
+**cto_pitch**: Stops data theft from the inside. Boosts reputation by showing we're in control.
+
+**tags**: `insider_threat, ueba, behavior`
+
+---
+
+#### [Cloud-Posture-Auto-Remediation]
+
+**id**: `cspm_hygiene_enforcement`
+**category**: `cloud_security`
+**subcategory**: `cspm`
+**source**: `AWS Well-Architected`
+**applies_when**: `server node defense < 4`
+
+**description**: A robot that goes around closing S3 buckets that developers accidentally left open to the entire internet. It’s like a parent cleaning up toys, but with fewer tears.
+
+**game_effects**:
+  node_targets: `server`
+  metrics_delta:
+    - metric: `defense`
+      delta: `+4`
+      condition: `always`
+    - metric: `compliance_score`
+      delta: `+0.2`
+      condition: `always`
+  company_delta:
+    - metric: `compliance`
+      delta: `+0.2`
+      condition: `always`
+  duration_turns: `permanent`
+  activation_cost_eur_k: `90`
+  recurring_cost_eur_k_per_turn: `5`
+
+**trade_offs**:
+  upside: Automatically fixes 90% of common cloud configuration blunders.
+  downside: Might occasionally break a "creative" workaround a developer built.
+  revenue_risk: `moderate`
+
+**cto_pitch**: For €5k/turn, we ensure our cloud never becomes a front-page news headline.
+
+**tags**: `cloud, cspm, automation`
+
+---
+
+#### [DLP-Exfiltration-Blocker]
+
+**id**: `data_loss_prevention_policy`
+**category**: `data_protection`
+**subcategory**: `dlp`
+**source**: `PCI-DSS v4.0`
+**applies_when**: `database node visible and unprotected`
+
+**description**: A digital sieve that catches credit card numbers and passwords before they leave the building. It’s the last line of defense between us and a catastrophic data leak.
+
+**game_effects**:
+  node_targets: `database | entry`
+  metrics_delta:
+    - metric: `defense`
+      delta: `+2`
+      condition: `always`
+  company_delta:
+    - metric: `cash`
+      delta: `-50`
+      condition: `if_breach_active`
+    - metric: `compliance`
+      delta: `+0.3`
+      condition: `always`
+  duration_turns: `permanent`
+  activation_cost_eur_k: `180`
+  recurring_cost_eur_k_per_turn: `12`
+
+**trade_offs**:
+  upside: Prevents the actual loss of sensitive data during a breach.
+  downside: Very sensitive; it will probably block your legitimate encrypted reports too.
+  revenue_risk: `moderate`
+
+**cto_pitch**: Limits the financial damage of a breach by 50% and satisfies PCI-DSS.
+
+**tags**: `dlp, data_privacy, compliance`
+
+--- CORPUS 2 ---
+
+#### [Bottleneck-Elimination-Sprint]
+
+**id**: `throughput_optimization_sprint`
+**category**: `performance`
+**subcategory**: `optimization`
+**source**: `Google SRE Book`
+**applies_when**: `middleware throughput < 5`
+
+**description**: Stop trying to squeeze a gallon through a straw. We’re identifying the code paths that are currently choking our revenue and rewriting them in something faster than Python.
+
+**game_effects**:
+  node_targets: `middleware`
+  metrics_delta:
+    - metric: `throughput`
+      delta: `+4`
+      condition: `always`
+    - metric: `cost`
+      delta: `-1`
+      condition: `always`
+  company_delta:
+    - metric: `cash`
+      delta: `+20`
+      condition: `always`
+  duration_turns: `2`
+  activation_cost_eur_k: `40`
+  recurring_cost_eur_k_per_turn: `0`
+
+**trade_offs**:
+  upside: Direct increase in processing capacity and immediate revenue lift.
+  downside: Diverts engineering talent away from "shiny new features" for two weeks.
+  revenue_risk: `none`
+
+**cto_pitch**: We unlock €20k/turn in extra revenue by removing the middleware clog.
+
+**tags**: `throughput, efficiency, performance`
+
+---
+
+#### [Elastic-Auto-Scaling]
+
+**id**: `dynamic_capacity_scaling`
+**category**: `infrastructure`
+**subcategory**: `scaling`
+**source**: `AWS Well-Architected`
+**applies_when**: `middleware throughput < 5 or any flow current_revenue < base_revenue * 0.7`
+
+**description**: Throwing money at the problem until the latency stops screaming. It’s essentially paying the cloud provider to hide the fact that our code isn't efficient enough for peak load.
+
+**game_effects**:
+  node_targets: `server | middleware`
+  metrics_delta:
+    - metric: `throughput`
+      delta: `+5`
+      condition: `always`
+    - metric: `cost`
+      delta: `+3`
+      condition: `always`
+  company_delta:
+    - metric: `cash`
+      delta: `+100`
+      condition: `if_revenue_critical`
+  duration_turns: `permanent`
+  activation_cost_eur_k: `60`
+  recurring_cost_eur_k_per_turn: `20`
+
+**trade_offs**:
+  upside: The site never goes down during a marketing surge.
+  downside: Your monthly cloud bill will look like a phone number.
+  revenue_risk: `low`
+
+**cto_pitch**: We trade €20k/turn in cloud costs for €100k/turn in protected revenue.
+
+**tags**: `scaling, cloud, availability`
+
+---
+
+#### [RPO-RTO-Backup-Tuning]
+
+**id**: `disaster_recovery_optimization`
+**category**: `reliability`
+**subcategory**: `backup`
+**source**: `DORA Metrics`
+**applies_when**: `multiple nodes offline`
+
+**description**: Because "we have backups" is a lie until you've tried to restore them. We’re tuning the knobs to ensure we lose minutes of data, not months, when things go sideways.
+
+**game_effects**:
+  node_targets: `database`
+  metrics_delta:
+    - metric: `defense`
+      delta: `+1`
+      condition: `always`
+  company_delta:
+    - metric: `breach_timer`
+      delta: `-4`
+      condition: `always`
+    - metric: `reputation`
+      delta: `+20`
+      condition: `if_breach_active`
+  duration_turns: `3`
+  activation_cost_eur_k: `100`
+  recurring_cost_eur_k_per_turn: `5`
+
+**trade_offs**:
+  upside: Drastically reduces downtime and data loss during a major incident.
+  downside: Requires more expensive, high-frequency snapshotting storage.
+  revenue_risk: `none`
+
+**cto_pitch**: Reduces downtime recovery by 4 turns. Protects brand reputation.
+
+**tags**: `reliability, rpo, rto, recovery`
+
+---
+
+#### [Observability-Stack-Upgrade]
+
+**id**: `prometheus_grafana_deployment`
+**category**: `observability`
+**subcategory**: `monitoring`
+**source**: `Google SRE Book`
+**applies_when**: `visibility < 3`
+
+**description**: Moving from "is it up?" to "why is it weird?" We’re adding enough dashboards to make the office look like NASA, hopefully spotting failures before the customers do.
+
+**game_effects**:
+  node_targets: `all`
+  metrics_delta:
+    - metric: `visibility`
+      delta: `+5`
+      condition: `always`
+  company_delta:
+    - metric: `breach_timer`
+      delta: `+1`
+      condition: `always`
+  duration_turns: `permanent`
+  activation_cost_eur_k: `80`
+  recurring_cost_eur_k_per_turn: `10`
+
+**trade_offs**:
+  upside: Total transparency into system health; no more "mystery" slowdowns.
+  downside: Developers will spend all day tweaking dashboard colors instead of fixing bugs.
+  revenue_risk: `low`
+
+**cto_pitch**: High visibility cuts through the fog. Improves mean-time-to-detection.
+
+**tags**: `observability, monitoring, dashboards`
+
+---
+
+#### [Centralized-Logging-Aggregator]
+
+**id**: `loki_elk_centralization`
+**category**: `observability`
+**subcategory**: `logging`
+**source**: `Google SRE Book`
+**applies_when**: `database node fogged`
+
+**description**: Searching for an error in distributed systems without central logs is like looking for a needle in a haystack, while the haystack is on fire. This puts the needles in one place.
+
+**game_effects**:
+  node_targets: `all`
+  metrics_delta:
+    - metric: `visibility`
+      delta: `+3`
+      condition: `always`
+    - metric: `fogged`
+      delta: `set:false`
+      condition: `always`
+  company_delta:
+    - metric: `cash`
+      delta: `-5`
+      condition: `always`
+  duration_turns: `permanent`
+  activation_cost_eur_k: `90`
+  recurring_cost_eur_k_per_turn: `15`
+
+**trade_offs**:
+  upside: Makes post-mortem analysis actually possible rather than speculative.
+  downside: Indexing every single "Hello World" log costs a fortune in RAM.
+  revenue_risk: `none`
+
+**cto_pitch**: Eliminates "fog of war" on our nodes for a flat €15k/turn fee.
+
+**tags**: `logging, observability, troubleshooting`
+
+---
+
+#### [Database-Read-Replicas]
+
+**id**: `db_sharding_replicas`
+**category**: `infrastructure`
+**subcategory**: `database`
+**source**: `AWS Well-Architected`
+**applies_when**: `database node fogged or node cost > 7`
+
+**description**: Stopping the "one big database" from becoming a single point of failure and a massive bottleneck. We’re cloning the data so the reports don't stop the customers from buying things.
+
+**game_effects**:
+  node_targets: `database`
+  metrics_delta:
+    - metric: `throughput`
+      delta: `+4`
+      condition: `always`
+    - metric: `defense`
+      delta: `-1`
+      condition: `always`
+  company_delta:
+    - metric: `cash`
+      delta: `+40`
+      condition: `always`
+  duration_turns: `5`
+  activation_cost_eur_k: `150`
+  recurring_cost_eur_k_per_turn: `25`
+
+**trade_offs**:
+  upside: Massive boost to customer-facing performance and revenue.
+  downside: "Eventual consistency" means some customers might see yesterday's balance for a few seconds.
+  revenue_risk: `moderate`
+
+**cto_pitch**: Increases transaction throughput by 40%, yielding €40k/turn in growth.
+
+**tags**: `database, throughput, scale`
+
+---
+
+#### [Async-Architecture-Pivot]
+
+**id**: `event_driven_migration`
+**category**: `architecture`
+**subcategory**: `event_driven`
+**source**: `Google SRE Book`
+**applies_when**: `middleware throughput < 3`
+
+**description**: Stop making the user wait for the email to send before showing them the "Success" page. We’re moving to an architecture where things happen "eventually," which is much faster.
+
+**game_effects**:
+  node_targets: `middleware`
+  metrics_delta:
+    - metric: `throughput`
+      delta: `+6`
+      condition: `always`
+    - metric: `visibility`
+      delta: `-2`
+      condition: `always`
+  company_delta:
+    - metric: `cash`
+      delta: `+60`
+      condition: `always`
+  duration_turns: `permanent`
+  activation_cost_eur_k: `250`
+  recurring_cost_eur_k_per_turn: `5`
+
+**trade_offs**:
+  upside: Huge throughput gains; the system becomes much harder to crash with load.
+  downside: Debugging becomes a nightmare of "where did that message go?"
+  revenue_risk: `high`
+
+**cto_pitch**: We double our capacity for €250k. It’s the only way to scale for the next 2 years.
+
+**tags**: `async, event_driven, throughput`
+
+---
+
+#### [Multi-Cloud-Diversification]
+
+**id**: `vendor_agnostic_cloud`
+**category**: `infrastructure`
+**subcategory**: `cloud`
+**source**: `DORA Metrics`
+**applies_when**: `vendor node visibility < 4`
+
+**description**: Because even the "Big Three" have bad days. We're spreading our eggs across multiple baskets so that a single region outage doesn't take the company offline.
+
+**game_effects**:
+  node_targets: `vendor | server`
+  metrics_delta:
+    - metric: `defense`
+      delta: `+2`
+      condition: `always`
+  company_delta:
+    - metric: `reputation`
+      delta: `+30`
+      condition: `if_breach_active`
+    - metric: `cash`
+      delta: `-40`
+      condition: `always`
+  duration_turns: `permanent`
+  activation_cost_eur_k: `400`
+  recurring_cost_eur_k_per_turn: `50`
+
+**trade_offs**:
+  upside: Near-perfect availability during major cloud provider outages.
+  downside: Complexity is doubled, and we lose all our "bulk buy" discounts.
+  revenue_risk: `low`
+
+**cto_pitch**: Eliminates 3rd-party vendor risk. High cost, but it's "anti-bankruptcy" insurance.
+
+**tags**: `multi_cloud, availability, redundancy`
+
+---
+
+#### [SLA-Enforcement-Shield]
+
+**id**: `service_level_monitoring`
+**category**: `governance`
+**subcategory**: `sla`
+**source**: `Google SRE Book`
+**applies_when**: `any flow current_revenue < base_revenue * 0.5`
+
+**description**: Turning the vague "it's slow" into a legal document. We’re defining exactly what constitutes "broken" and holding teams (and vendors) accountable for it.
+
+**game_effects**:
+  node_targets: `all`
+  metrics_delta:
+    - metric: `throughput`
+      delta: `+2`
+      condition: `always`
+  company_delta:
+    - metric: `compliance`
+      delta: `+0.2`
+      condition: `always`
+    - metric: `cash`
+      delta: `+15`
+      condition: `if_compliance_lt_0.5`
+  duration_turns: `permanent`
+  activation_cost_eur_k: `50`
+  recurring_cost_eur_k_per_turn: `5`
+
+**trade_offs**:
+  upside: Drives a culture of reliability and allows us to claw back money from failing vendors.
+  downside: We might find out we're the ones failing our own SLAs.
+  revenue_risk: `none`
+
+**cto_pitch**: Standardizes performance. Increases net income by €15k/turn via efficiency.
+
+**tags**: `sla, slo, reliability`
+
+---
+
+#### [FinOps-Cloud-Audit]
+
+**id**: `cost_optimization_drive`
+**category**: `finops`
+**subcategory**: `cost`
+**source**: `FinOps Foundation`
+**applies_when**: `node cost > 7 or net_income negative for 2+ turns`
+
+**description**: A ruthless hunt for the "Zombie" servers and over-provisioned databases that are eating our budget. It’s like finding €20 bills in the laundry.
+
+**game_effects**:
+  node_targets: `all`
+  metrics_delta:
+    - metric: `cost`
+      delta: `-3`
+      condition: `always`
+  company_delta:
+    - metric: `cash`
+      delta: `+80`
+      condition: `always`
+  duration_turns: `2`
+  activation_cost_eur_k: `30`
+  recurring_cost_eur_k_per_turn: `0`
+
+**trade_offs**:
+  upside: Immediate, significant boost to the bottom line without cutting staff.
+  downside: We might accidentally delete the "critical" test environment for a major project.
+  revenue_risk: `moderate`
+
+**cto_pitch**: One-time €30k spend to recover €80k/turn in wasted cloud spend.
+
+**tags**: `finops, cost_reduction, cloud`
+
+---
+
+#### [Chaos-Engineering-Drills]
+
+**id**: `fault_injection_testing`
+**category**: `reliability`
+**subcategory**: `chaos`
+**source**: `Principles of Chaos`
+**applies_when**: `defense > 5`
+
+**description**: Breaking things on purpose during office hours so they don't break on their own at 2 AM. It's like a fire drill, but we actually start a small, controlled fire.
+
+**game_effects**:
+  node_targets: `server | middleware`
+  metrics_delta:
+    - metric: `defense`
+      delta: `+3`
+      condition: `always`
+    - metric: `visibility`
+      delta: `+2`
+      condition: `always`
+  company_delta:
+    - metric: `breach_timer`
+      delta: `-2`
+      condition: `always`
+  duration_turns: `3`
+  activation_cost_eur_k: `110`
+  recurring_cost_eur_k_per_turn: `5`
+
+**trade_offs**:
+  upside: Forces the system to become resilient; outages become non-events.
+  downside: There’s a non-zero chance "controlled" becomes "uncontrolled" very quickly.
+  revenue_risk: `high`
+
+**cto_pitch**: We test our resilience before the attackers do. Improves survival by 2 turns.
+
+**tags**: `chaos, resilience, reliability`
+
+---
+
+#### [Feature-Flag-Rollout]
+
+**id**: `progressive_delivery_toggles`
+**category**: `delivery`
+**subcategory**: `deployment`
+**source**: `DORA Metrics`
+**applies_when**: `any flow current_revenue < base_revenue * 0.9`
+
+**description**: Giving ourselves a "Kill Switch" for every new feature. If the new update breaks the checkout page, we just flip a switch instead of waiting for a 4-hour rollback.
+
+**game_effects**:
+  node_targets: `entry`
+  metrics_delta:
+    - metric: `throughput`
+      delta: `+2`
+      condition: `always`
+  company_delta:
+    - metric: `reputation`
+      delta: `+10`
+      condition: `always`
+    - metric: `cash`
+      delta: `+20`
+      condition: `if_revenue_critical`
+  duration_turns: `permanent`
+  activation_cost_eur_k: `130`
+  recurring_cost_eur_k_per_turn: `10`
+
+**trade_offs**:
+  upside: Decouples "deploying" from "releasing." Faster recovery from bad updates.
+  downside: Adds significant technical debt and conditional logic mess to the codebase.
+  revenue_risk: `low`
+
+**cto_pitch**: Protects revenue during new launches. Cuts down on "failed release" PR hits.
+
+**tags**: `feature_flags, delivery, dora`
+
+---
+
+#### [API-Gateway-Rate-Limiter]
+
+**id**: `api_rate_limiting`
+**category**: `infrastructure`
+**subcategory**: `traffic_management`
+**source**: `Google SRE Book`
+**applies_when**: `middleware throughput < 4`
+
+**description**: Stopping that one "enthusiastic" partner from crawling our entire site 100 times a second and crashing the database. We’re putting a speed limit on our digital roads.
+
+**game_effects**:
+  node_targets: `entry`
+  metrics_delta:
+    - metric: `throughput`
+      delta: `+3`
+      condition: `always`
+    - metric: `defense`
+      delta: `+2`
+      condition: `always`
+  company_delta:
+    - metric: `cash`
+      delta: `+10`
+      condition: `always`
+  duration_turns: `permanent`
+  activation_cost_eur_k: `70`
+  recurring_cost_eur_k_per_turn: `2`
+
+**trade_offs**:
+  upside: Stabilizes system performance and prevents "Death by a Thousand Scrapers."
+  downside: Some legit high-volume partners will hit the limit and start calling your phone.
+  revenue_risk: `low`
+
+**cto_pitch**: Stabilizes throughput and revenue for a tiny €2k/turn maintenance cost.
+
+**tags**: `api, traffic, stabilization`
+
+---
+
+#### [Circuit-Breaker-Pattern]
+
+**id**: `circuit_breaker_implementation`
+**category**: `architecture`
+**subcategory**: `resilience`
+**source**: `Release It! (Nygard)`
+**applies_when**: `multiple nodes offline`
+
+**description**: If a downstream service is failing, stop calling it. Don't let a slow database drag the entire customer experience into the abyss. Fail fast, recover faster.
+
+**game_effects**:
+  node_targets: `middleware | server`
+  metrics_delta:
+    - metric: `throughput`
+      delta: `+2`
+      condition: `always`
+    - metric: `defense`
+      delta: `+1`
+      condition: `always`
+  company_delta:
+    - metric: `breach_timer`
+      delta: `-1`
+      condition: `always`
+  duration_turns: `permanent`
+  activation_cost_eur_k: `120`
+  recurring_cost_eur_k_per_turn: `0`
+
+**trade_offs**:
+  upside: Prevents cascading failures that turn minor glitches into total outages.
+  downside: Users will see "Service Unavailable" instead of "Loading..."—some call that progress.
+  revenue_risk: `moderate`
+
+**cto_pitch**: Prevents system-wide meltdowns. One-time cost to ensure we never cascade.
+
+**tags**: `resilience, patterns, cascading_failure`
+
+---
+
+#### [Service-Mesh-Intelligence]
+
+**id**: `service_mesh_istio`
+**category**: `infrastructure`
+**subcategory**: `networking`
+**source**: `Cloud Native Computing Foundation`
+**applies_when**: `visibility < 4 or middleware throughput < 5`
+
+**description**: Adding a tiny sidecar to every service to handle the "plumbing" of networking. It’s like upgrading from walkie-talkies to a fully encrypted, monitored phone network.
+
+**game_effects**:
+  node_targets: `middleware | server`
+  metrics_delta:
+    - metric: `visibility`
+      delta: `+4`
+      condition: `always`
+    - metric: `defense`
+      delta: `+2`
+      condition: `always`
+  company_delta:
+    - metric: `compliance`
+      delta: `+0.1`
+      condition: `always`
+  duration_turns: `5`
+  activation_cost_eur_k: `220`
+  recurring_cost_eur_k_per_turn: `35`
+
+**trade_offs**:
+  upside: Out-of-the-box encryption and deep observability for all internal traffic.
+  downside: The CPU overhead will require us to buy more servers just to run the "plumbing."
+  revenue_risk: `low`
+
+**cto_pitch**: The ultimate visibility and security upgrade for a complex microservices estate.
+
+**tags**: `service_mesh, kubernetes, observability`
+
+---
+
+#### [GitOps-IaC-Enforcement]
+
+**id**: `infrastructure_as_code_pipeline`
+**category**: `delivery`
+**subcategory**: `gitops`
+**source**: `DORA Metrics`
+**applies_when**: `compliance < 0.6`
+
+**description**: No more "cowboy" changes in the production console. If it’s not in the code, it doesn't exist. This forces an audit trail on every single server change.
+
+**game_effects**:
+  node_targets: `server`
+  metrics_delta:
+    - metric: `compliance_score`
+      delta: `+0.4`
+      condition: `always`
+    - metric: `defense`
+      delta: `+2`
+      condition: `always`
+  company_delta:
+    - metric: `compliance`
+      delta: `set:0.9`
+      condition: `always`
+  duration_turns: `permanent`
+  activation_cost_eur_k: `160`
+  recurring_cost_eur_k_per_turn: `10`
+
+**trade_offs**:
+  upside: Recovery becomes as simple as "re-running the script." No more snowflakes.
+  downside: A single typo in a script can now delete the entire production environment in seconds.
+  revenue_risk: `high`
+
+**cto_pitch**: Guarantees compliance and makes disaster recovery a 5-minute task.
+
+**tags**: `gitops, iac, compliance, automation`
+
+---
+
+#### [SLO-On-Call-Rotation]
+
+**id**: `sre_oncall_definition`
+**category**: `reliability`
+**subcategory**: `governance`
+**source**: `Google SRE Book`
+**applies_when**: `multiple nodes offline`
+
+**description**: Actually paying people to care about the systems on the weekend. We're formalizing who gets woken up and ensuring they have the power to say "no" to new features if the system is unstable.
+
+**game_effects**:
+  node_targets: `all`
+  metrics_delta:
+    - metric: `visibility`
+      delta: `+2`
+      condition: `always`
+  company_delta:
+    - metric: `breach_timer`
+      delta: `-3`
+      condition: `if_breach_active`
+    - metric: `reputation`
+      delta: `+5`
+      condition: `always`
+  duration_turns: `permanent`
+  activation_cost_eur_k: `80`
+  recurring_cost_eur_k_per_turn: `25`
+
+**trade_offs**:
+  upside: Faster response times and a workforce that isn't burnt out from "hidden" work.
+  downside: It turns out that people want to be paid real money for having their sleep interrupted.
+  revenue_risk: `none`
+
+**cto_pitch**: Faster incident recovery. €25k/turn buys us a 3-turn faster breach resolution.
+
+**tags**: `sre, slo, reliability, culture`
+
+---
+
+#### [DB-Connection-Pooling]
+
+**id**: `database_connection_optimization`
+**category**: `infrastructure`
+**subcategory**: `database`
+**source**: `Google SRE Book`
+**applies_when**: `database node fogged and throughput < 5`
+
+**description**: Reusing database connections instead of opening a new one for every single request. It’s the difference between carpooling and everyone taking their own bus to work.
+
+**game_effects**:
+  node_targets: `database`
+  metrics_delta:
+    - metric: `throughput`
+      delta: `+3`
+      condition: `always`
+    - metric: `cost`
+      delta: `-2`
+      condition: `always`
+  company_delta:
+    - metric: `cash`
+      delta: `+10`
+      condition: `always`
+  duration_turns: `2`
+  activation_cost_eur_k: `40`
+  recurring_cost_eur_k_per_turn: `0`
+
+**trade_offs**:
+  upside: Squeezes more life out of our current (expensive) database servers.
+  downside: Can mask underlying architectural issues that will bite us later.
+  revenue_risk: `low`
+
+**cto_pitch**: Immediate throughput gain and €10k/turn savings for a one-time sprint.
+
+**tags**: `database, throughput, cost_reduction`
+
+---
+
+#### [Edge-Content-Caching]
+
+**id**: `cdn_edge_acceleration`
+**category**: `performance`
+**subcategory**: `cdn`
+**source**: `DORA Metrics`
+**applies_when**: `any flow current_revenue < base_revenue * 0.8`
+
+**description**: Moving our data closer to the customer so it doesn't have to travel across the ocean for every click. It's essentially the speed of light working in our favor.
+
+**game_effects**:
+  node_targets: `entry`
+  metrics_delta:
+    - metric: `throughput`
+      delta: `+5`
+      condition: `always`
+    - metric: `cost`
+      delta: `+2`
+      condition: `always`
+  company_delta:
+    - metric: `cash`
+      delta: `+45`
+      condition: `always`
+  duration_turns: `permanent`
+  activation_cost_eur_k: `90`
+  recurring_cost_eur_k_per_turn: `15`
+
+**trade_offs**:
+  upside: Massive improvement in user experience and a 50% reduction in origin server load.
+  downside: "Cache invalidation" is the second hardest problem in computer science.
+  revenue_risk: `moderate`
+
+**cto_pitch**: Boosts revenue by €45k/turn by making the site feel "instant" worldwide.
+
+**tags**: `cdn, throughput, performance`
+
+---
+
+#### [Post-Mortem-Blameless-Culture]
+
+**id**: `incident_learning_culture`
+**category**: `governance`
+**subcategory**: `culture`
+**source**: `SRE Book Google`
+**applies_when**: `breach_timer > 0 or multiple nodes offline`
+
+**description**: Learning why we failed without pointing fingers at the guy who typed the wrong command. We're turning our mistakes into an expensive educational program.
+
+**game_effects**:
+  node_targets: `all`
+  metrics_delta:
+    - metric: `defense`
+      delta: `+2`
+      condition: `always`
+    - metric: `visibility`
+      delta: `+1`
+      condition: `always`
+  company_delta:
+    - metric: `breach_timer`
+      delta: `-2`
+      condition: `if_breach_active`
+    - metric: `reputation`
+      delta: `+15`
+      condition: `always`
+  duration_turns: `3`
+  activation_cost_eur_k: `20`
+  recurring_cost_eur_k_per_turn: `0`
+
+**trade_offs**:
+  upside: Prevents the same mistake from happening twice. Boosts morale.
+  downside: Takes a lot of time and requires engineers to be honest about their blunders.
+  revenue_risk: `none`
+
+**cto_pitch**: Minimal cost for a long-term defense boost and reputation recovery.
+
+**tags**: `post_mortem, culture, reliability`
+
+
+---
+
+Voici une extension du **Corpus 1 (CISO Strategic Policies)** intégrant des piliers stratégiques essentiels souvent négligés, notamment suite aux évolutions des frameworks NIST CSF 2.0 et aux réalités de 2026.
+
+---
+
+#### [AI-Governance-Shadow-Ban]
+
+**id**: `ai_risk_governance_policy`
+**category**: `governance`
+**subcategory**: `emerging_tech`
+**source**: `NIST AI RMF 1.0 / ISO 42001`
+**applies_when**: `compliance < 0.6 and net_income negative`
+
+**description**: Since everyone from Marketing to HR is now feeding our proprietary source code into "efficiency" LLMs, we’re implementing a leash. It turns out "free" AI tools have a nasty habit of training on your trade secrets.
+
+**game_effects**:
+  node_targets: `human | entry`
+  metrics_delta:
+    - metric: `defense`
+      delta: `+3`
+      condition: `always`
+    - metric: `compliance_score`
+      delta: `+0.4`
+      condition: `always`
+  company_delta:
+    - metric: `reputation`
+      delta: `+10`
+      condition: `if_breach_active`
+  duration_turns: `permanent`
+  activation_cost_eur_k: `120`
+  recurring_cost_eur_k_per_turn: `15`
+
+**trade_offs**:
+  upside: Stops the leakage of corporate IP into public AI datasets.
+  downside: Productivity will take a temporary hit when the interns realize they actually have to write their own emails.
+  revenue_risk: `moderate`
+
+**cto_pitch**: We prevent a "data leak by convenience" that could cost us millions in IP loss for a predictable €15k/turn overhead.
+
+**tags**: `ai_governance, data_leakage, shadow_it, compliance`
+
+---
+
+#### [API-Security-First-Mandate]
+
+**id**: `api_governance_shield`
+**category**: `security_architecture`
+**subcategory**: `application_security`
+**source**: `OWASP API Security Top 10`
+**applies_when**: `middleware throughput > 7 and visibility < 4`
+
+**description**: Our APIs are the digital equivalent of leaving all the windows open because we like the breeze. This policy mandates strict authentication and schema validation for every endpoint before it's "accidentally" exposed to the internet.
+
+**game_effects**:
+  node_targets: `middleware | entry`
+  metrics_delta:
+    - metric: `defense`
+      delta: `+4`
+      condition: `always`
+    - metric: `visibility`
+      delta: `+2`
+      condition: `always`
+  company_delta:
+    - metric: `cash`
+      delta: `-30`
+      condition: `if_compromised`
+  duration_turns: `permanent`
+  activation_cost_eur_k: `140`
+  recurring_cost_eur_k_per_turn: `10`
+
+**trade_offs**:
+  upside: Closes the most common vector for modern data exfiltration.
+  downside: Will break at least three "legacy" integrations that no one remembers building.
+  revenue_risk: `high`
+
+**cto_pitch**: We're securing the €50k/turn revenue flow that currently relies on "hope" as a security control.
+
+**tags**: `api_security, middleware, authentication, exfiltration`
+
+---
+
+#### [Quantum-Safe-Crypto-Transition]
+
+**id**: `quantum_resistant_crypto`
+**category**: `cryptography`
+**subcategory**: `future_proofing`
+**source**: `NIST PQC Standards`
+**applies_when**: `database node visible and compliance > 0.8`
+
+**description**: Preparation for the day a quantum computer decides our current encryption is a charming historical curiosity. We’re upgrading our algorithms now so our 2026 data isn't decrypted by a state actor in 2028.
+
+**game_effects**:
+  node_targets: `database | server`
+  metrics_delta:
+    - metric: `defense`
+      delta: `+2`
+      condition: `always`
+    - metric: `compliance_score`
+      delta: `+0.5`
+      condition: `always`
+  company_delta:
+    - metric: `insurance_active`
+      delta: `set:true`
+      condition: `always`
+  duration_turns: `5`
+  activation_cost_eur_k: `350`
+  recurring_cost_eur_k_per_turn: `40`
+
+**trade_offs**:
+  upside: Guarantees long-term data confidentiality against nation-state "harvest now, decrypt later" attacks.
+  downside: It’s incredibly expensive and slows down everything it touches by 15%.
+  revenue_risk: `low`
+
+**cto_pitch**: Future-proofs our most sensitive assets and lowers our cyber insurance premiums by 20%.
+
+**tags**: `cryptography, quantum, long_term_risk, compliance`
+
+---
+
+#### [SaaS-Posture-Sanity-Check]
+
+**id**: `sspm_enforcement`
+**category**: `cloud_security`
+**subcategory**: `saas_management`
+**source**: `CIS Controls v8`
+**applies_when**: `vendor node visibility < 3`
+
+**description**: We have 400 SaaS apps, and half of them are sharing data with each other via "OAuth magic" that no one audited. This policy brings order to the chaos of our third-party app ecosystem.
+
+**game_effects**:
+  node_targets: `vendor`
+  metrics_delta:
+    - metric: `visibility`
+      delta: `+4`
+      condition: `always`
+    - metric: `defense`
+      delta: `+2`
+      condition: `always`
+  company_delta:
+    - metric: `compliance`
+      delta: `+0.2`
+      condition: `always`
+  duration_turns: `permanent`
+  activation_cost_eur_k: `85`
+  recurring_cost_eur_k_per_turn: `12`
+
+**trade_offs**:
+  upside: Detects when a rogue Chrome extension starts reading the CFO's emails.
+  downside: The "Productivity Guru" in Sales will be upset when his unvetted automation tool is blocked.
+  revenue_risk: `none`
+
+**cto_pitch**: We regain control over our data sprawl across 3rd party vendors for €12k/turn.
+
+**tags**: `saas, sspm, vendor_risk, visibility`
+
+---
+
+#### [Automated-Control-Validation]
+
+**id**: `continuous_attack_simulation`
+**category**: `offensive_security`
+**subcategory**: `bas`
+**source**: `CISA / MITRE ATT&CK`
+**applies_when**: `defense > 5 and breach_timer == 0`
+
+**description**: Instead of a once-a-year pentest that becomes obsolete the moment it's printed, we’re running 24/7 mini-attacks against ourselves. It's constant stress testing for our defenses.
+
+**game_effects**:
+  node_targets: `all`
+  metrics_delta:
+    - metric: `visibility`
+      delta: `+3`
+      condition: `always`
+    - metric: `defense`
+      delta: `+2`
+      condition: `always`
+  company_delta:
+    - metric: `breach_timer`
+      delta: `+2`
+      condition: `if_breach_active`
+  duration_turns: `permanent`
+  activation_cost_eur_k: `160`
+  recurring_cost_eur_k_per_turn: `20`
+
+**trade_offs**:
+  upside: Provides real-time evidence that our security tools actually work (or don't).
+  downside: Floods the SOC with "simulated" alerts that can obscure real ones if not tuned properly.
+  revenue_risk: `low`
+
+**cto_pitch**: We stop guessing if we're secure and start proving it. Extends breach survival by 2 turns.
+
+**tags**: `bas, continuous_validation, offensive_security`
+
+---
+
+#### [Board-Level-Risk-Quantification]
+
+**id**: `fair_risk_modeling`
+**category**: `governance`
+**subcategory**: `reporting`
+**source**: `NIST CSF 2.0 (Govern) / FAIR Institute`
+**applies_when**: `compliance < 0.5 or net_income negative`
+
+**description**: Moving away from "Red/Amber/Green" charts that mean nothing to the Board. We’re translating cyber risk into Euros and probabilities, so the adults can make informed financial decisions.
+
+**game_effects**:
+  node_targets: `all`
+  metrics_delta:
+    - metric: `compliance_score`
+      delta: `+0.3`
+      condition: `always`
+  company_delta:
+    - metric: `reputation`
+      delta: `+20`
+      condition: `always`
+    - metric: `cash`
+      delta: `+30`
+      condition: `if_compliance_lt_0.5`
+  duration_turns: `permanent`
+  activation_cost_eur_k: `50`
+  recurring_cost_eur_k_per_turn: `5`
+
+**trade_offs**:
+  upside: Finally aligns security spending with business value, making budget approvals much easier.
+  downside: The Board might realize just how much we've been underestimating the cost of a breach.
+  revenue_risk: `none`
+
+**cto_pitch**: Translates "scary tech talk" into € savings. Boosts shareholder reputation by 20 points.
+
+**tags**: `governance, reporting, board, financial_risk`

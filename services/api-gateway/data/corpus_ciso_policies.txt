@@ -1,0 +1,56 @@
+CISO POLICY CORPUS — Ransom Rampage
+Each policy below can be recommended when game state matches the applies_when condition.
+
+---
+id: ciso_zero_trust
+action_id: S2
+applies_when: any node compromised AND lateral movement risk (adjacent non-isolated nodes)
+node_targets: global
+duration_turns: 4
+cost: 200
+cto_pitch: "Every connection re-verified. Byte needs root x3 to progress. Protects all revenue flows for 4 turns."
+
+---
+id: ciso_honeypot_entry
+action_id: S4
+applies_when: entry/human node with defense < 5 AND no active compromise on that node
+node_targets: entry, human
+duration_turns: 3
+cost: 100
+cto_pitch: "Deception trap on weak perimeter. Reveals Byte position + defrosts adjacent fog. Intel before impact."
+
+---
+id: ciso_soc_contract
+action_id: S5
+applies_when: 3+ fogged nodes AND no active compromise
+node_targets: global
+duration_turns: 4
+cost: 150
+cto_pitch: "Full visibility for 4 turns. Every hidden threat exposed. Removes all fog — no surprises."
+
+---
+id: ciso_ir_retainer
+action_id: S6
+applies_when: breach_timer > 0 OR compliance < 0.4
+node_targets: global
+duration_turns: 3
+cost: 180
+cto_pitch: "Legal shield active. No fines for 3 turns. Buys time to remediate without regulatory pressure."
+
+---
+id: ciso_scan_perimeter
+action_id: S1
+applies_when: fogged entry/human node exists AND no active crisis
+node_targets: entry, human (fogged only)
+duration_turns: null
+cost: 50
+cto_pitch: null
+
+---
+id: ciso_harden_weak
+action_id: S3
+applies_when: visible node with defense < 5 AND not fogged AND not compromised
+node_targets: entry, human, middleware (defense < 5)
+duration_turns: null
+cost: 75
+cto_pitch: null

@@ -48,11 +48,12 @@ async def get_suggestions(session_id: str):
 
 @router.post("/{session_id}/turn", response_model=TurnResponse)
 async def play_turn(session_id: str, request: TurnRequest):
-    print(f"[TURN] session={session_id} action_id={request.action_id} target={request.target}")
+    cto_list = [a.model_dump() for a in request.cto_actions]
+    print(f"[TURN] session={session_id} action_id={request.action_id} target={request.target} cto_actions={cto_list}")
     if not request.action_id:
         raise HTTPException(400, "action_id required")
     try:
-        turn_result = await svc_play_turn(session_id, request.action_id, request.target)
+        turn_result = await svc_play_turn(session_id, request.action_id, request.target, cto_actions=cto_list)
     except ValueError as e:
         raise HTTPException(400, str(e))
     return TurnResponse(

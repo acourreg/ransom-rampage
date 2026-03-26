@@ -382,6 +382,26 @@ def game_assembler_node(state: GameCreationState):
     game_state['byte']['byte_ap'] = 3 if threat_id in ('nation_state', 'ransomware_gang') else 2
     print(f'  ⚔️  Threat: {threat_name} ({threat_id}) | byte_ap={game_state["byte"]["byte_ap"]}')
 
+    # Calibrate max_turns based on economic viability
+    company = game_state['company']
+    total_costs_per_turn = sum(n.get('cost', 0) * 5 for n in nodes)
+    total_base_revenue   = sum(f.get('base_revenue', 0) for f in flows)
+    cash                 = company.get('cash', 4000)
+    survival_turns_at_zero = cash // total_costs_per_turn if total_costs_per_turn > 0 else 20
+    net_per_turn           = total_base_revenue - total_costs_per_turn
+
+    if net_per_turn > 20 and survival_turns_at_zero > 15:
+        max_turns = random.randint(15, 20)
+    elif net_per_turn > 0 and survival_turns_at_zero > 10:
+        max_turns = random.randint(12, 16)
+    elif net_per_turn > -20:
+        max_turns = random.randint(9, 13)
+    else:
+        max_turns = random.randint(6, 10)
+
+    company['max_turns'] = max_turns
+    print(f'  🕐 max_turns={max_turns} (net/turn={net_per_turn} survival_at_zero={survival_turns_at_zero})')
+
     node_types = {n['type'] for n in nodes}
     core_db    = next((n for n in nodes if n['type'] == 'database'), None)
     core_edge_count = sum(1 for e in edges

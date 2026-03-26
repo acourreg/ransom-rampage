@@ -9,7 +9,7 @@ class TestGenerationE2E:
         """Invoque la pipeline complète et valide le game_state produit."""
 
         # 1. Invoquer la pipeline (vrais LLM calls)
-        result = game_generator.invoke({"user_prompt": "Generate a fintech startup"})
+        result = game_generator.invoke({"user_prompt": "Generate a startup"})
         state = result["final_gamestate"]
 
         # 2. Company — champs requis

@@ -1,16 +1,28 @@
 import { useState } from 'react'
 import { buildGenerationPrompt } from '../config/startupThemes.js'
 
+// Generate initial random prompt on module load
+const initial = buildGenerationPrompt()
+
 export default function NewGameScreen({ onGenerate, loading }) {
-  const [generationMeta, setGenerationMeta] = useState(null)
-  const [generatedPrompt, setGeneratedPrompt] = useState('')
+  const [prompt, setPrompt]               = useState(initial.prompt)
+  const [generationMeta, setGenerationMeta] = useState(initial.meta)
+  const [shape, setShape]                 = useState(initial.shape)
+  const [nodeCount, setNodeCount]         = useState(initial.nodeCount)
+  const [threatAgent, setThreatAgent]     = useState(initial.threatAgent)
+
+  function handleReroll() {
+    const gen = buildGenerationPrompt()
+    setPrompt(gen.prompt)
+    setGenerationMeta(gen.meta)
+    setShape(gen.shape)
+    setNodeCount(gen.nodeCount)
+    setThreatAgent(gen.threatAgent)
+  }
 
   function handleGenerate() {
-    const gen = buildGenerationPrompt()
-    setGenerationMeta(gen.meta)
-    setGeneratedPrompt(gen.prompt)
-    console.log(`[GENERATE] ${gen.meta.thematic} | ${gen.meta.domain} | shape=${gen.meta.shape} nodes=${gen.meta.nodeCount}`)
-    onGenerate(gen.prompt, { shape: gen.shape, nodeCount: gen.nodeCount, threatAgent: gen.threatAgent })
+    console.log(`[GENERATE] ${generationMeta.thematic} | ${generationMeta.domain} | shape=${shape} nodes=${nodeCount}`)
+    onGenerate(prompt, { shape, nodeCount, threatAgent })
   }
 
   return (
@@ -43,7 +55,7 @@ export default function NewGameScreen({ onGenerate, loading }) {
           {[
             { icon: '⚡', label: 'AI generates your company' },
             { icon: '🛡', label: 'Defend against a live hacker' },
-            { icon: '🏆', label: 'Survive 10 turns' },
+            { icon: '🏆', label: 'Survive the simulation' },
           ].map(({ icon, label }) => (
             <div key={label} style={{
               display: 'flex', alignItems: 'center', gap: 6,
@@ -60,22 +72,36 @@ export default function NewGameScreen({ onGenerate, loading }) {
         </div>
 
         <div style={{ marginBottom: 12 }}>
-          <input
-            value={generatedPrompt || ''}
-            readOnly
-            placeholder="Click Generate — a random startup will be conjured"
-            style={{
-              width: '100%', boxSizing: 'border-box',
-              padding: '12px 16px', borderRadius: 8,
-              border: '1px solid rgba(255,255,255,0.15)', fontFamily: 'Inter', fontSize: 13,
-              color: generatedPrompt ? '#F1F5F9' : '#475569',
-              background: 'rgba(255,255,255,0.05)',
-              outline: 'none', cursor: 'default', marginBottom: 8,
-            }}
-          />
+          <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+            <input
+              value={prompt}
+              onChange={e => setPrompt(e.target.value)}
+              disabled={loading}
+              placeholder="Describe your startup..."
+              style={{
+                flex: 1, boxSizing: 'border-box',
+                padding: '12px 16px', borderRadius: 8,
+                border: '1px solid rgba(255,255,255,0.15)', fontFamily: 'Inter', fontSize: 13,
+                color: '#F1F5F9',
+                background: 'rgba(255,255,255,0.07)',
+                outline: 'none',
+              }}
+            />
+            <button
+              onClick={handleReroll}
+              disabled={loading}
+              title="Randomize prompt"
+              style={{
+                padding: '12px 14px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.15)',
+                background: 'rgba(255,255,255,0.07)', color: '#CBD5E1',
+                fontSize: 16, cursor: loading ? 'not-allowed' : 'pointer',
+                flexShrink: 0,
+              }}
+            >🎲</button>
+          </div>
           <button
             onClick={handleGenerate}
-            disabled={loading}
+            disabled={loading || !prompt.trim()}
             style={{
               width: '100%', padding: '12px 24px', borderRadius: 8, border: 'none',
               background: loading ? '#94A3B8' : '#2563EB',
@@ -87,21 +113,13 @@ export default function NewGameScreen({ onGenerate, loading }) {
           </button>
         </div>
 
-        {loading && generationMeta ? (
+        {loading ? (
           <p style={{ color: '#60A5FA', fontSize: 11, fontFamily: 'JetBrains Mono' }}>
             Provisioning infrastructure... (~20s)
           </p>
-        ) : generationMeta ? (
+        ) : (
           <p style={{ fontSize: 11, color: '#64748B', marginTop: 4, textAlign: 'center' }}>
             {generationMeta.thematic} · {generationMeta.domain}
-          </p>
-        ) : (
-          <p style={{
-            marginTop: 12, fontFamily: 'Inter', fontSize: 11,
-            color: '#475569', textAlign: 'center'
-          }}>
-            Each game generates a unique fintech company, infrastructure graph,
-            and threat actor. No two games are alike.
           </p>
         )}
       </div>

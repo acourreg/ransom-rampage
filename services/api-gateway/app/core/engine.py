@@ -106,9 +106,14 @@ def calculate_revenue(state: dict) -> dict:
             continue
 
         min_tp = min(int(node_map.get(nid, {}).get('throughput', 5)) for nid in path)
+        bottleneck_id = min(path, key=lambda nid: int(node_map.get(nid, {}).get('throughput', 5)))
         base   = flow.get('base_revenue', 0)
         flow['current_revenue'] = int(base * min_tp / 10)
+        flow['bottleneck'] = bottleneck_id
         total_revenue += flow['current_revenue']
+        print(f"  [FLOW {flow.get('name')}] bottleneck={bottleneck_id} "
+              f"(tp={node_map.get(bottleneck_id, {}).get('throughput')}) "
+              f"min_tp={min_tp} → rev={flow['current_revenue']}")
 
     node_costs   = sum(int(n.get('cost', 0)) * 5 for n in nodes)
     effect_costs = sum(int(e.get('cost_per_turn', 0)) for e in effects)
@@ -177,6 +182,16 @@ def _resolve_player_action(action_id: str, target: str | None, state: dict) -> l
     print(f"[_resolve] action={action_id} target={target} node_found={node is not None}")
 
     # ── CTO TACTICAL ──
+
+    if action_id == 'C0' and node:  # Scan Node (CTO-accessible S1 equivalent)
+        discovered = []
+        for v in state.get('vulnerabilities', []):
+            if v.get('node_id') == target:
+                v['known_by_player'] = True
+                discovered.append(f"sev={v.get('severity')}")
+        fog_was = node.get('fogged', False)
+        print(f'[C0 SCAN] target={target} fogged_was={fog_was} vulns_revealed={discovered or "none"}')
+        return [{'node_id': target, 'attribute': 'fogged', 'value': False}]
 
     if action_id == 'C1':   # Report Breach
         state['company']['breach_reported'] = True
@@ -622,12 +637,13 @@ def _check_win_lose(state: dict, turn_num: int) -> tuple[bool, str | None]:
         return True, '📉 Exode clients — reputation ≤ 0'
     if core_db and core_db.get('locked'):
         return True, '🔒 Breach — Core DB locked, game over'
-    if turn_num > 10:
+    max_turns = company.get('max_turns', 10)
+    if turn_num > max_turns:
         if (company.get('cash', 0) > 0 and
                 company.get('compliance', 0.7) > 0.5 and
                 company.get('reputation', 0.8) > 0.3):
-            return True, '🏆 VICTOIRE — survécu 10 tours !'
-        return True, '❌ Défaite — survécu mais pas assez solide'
+            return True, f'🏆 VICTOIRE — survécu {max_turns} tours !'
+        return True, f'❌ Défaite — survécu mais pas assez solide'
 
     return False, None
 
@@ -641,9 +657,10 @@ _ACTION_NAMES = {
     'S4': 'Honeypot',         'S5': 'SOC Contract',     'S6': 'IR Retainer',
     'E1': 'Optimize',         'E2': 'Restore',          'E3': 'Full Observability',
     'E4': 'Auto-Failover',    'E5': 'Infra Freeze',     'E6': 'Cost Drive',
-    'C1': 'Report Breach',    'C2': 'Boost Throughput', 'C3': 'Patch Vuln',
-    'C4': 'Cut Costs',        'C5': 'Evict',            'C6': 'Pay Ransom',
-    'C7': 'Reinforce',        'C8': 'Deploy MFA',       'C9': 'Do Nothing',
+    'C0': 'Scan Node',        'C1': 'Report Breach',    'C2': 'Boost Throughput',
+    'C3': 'Patch Vuln',       'C4': 'Cut Costs',        'C5': 'Evict',
+    'C6': 'Pay Ransom',       'C7': 'Reinforce',        'C8': 'Deploy MFA',
+    'C9': 'Do Nothing',
 }
 
 

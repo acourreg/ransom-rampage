@@ -1,0 +1,56 @@
+SRE POLICY CORPUS — Ransom Rampage
+Each policy below can be recommended when game state matches the applies_when condition.
+
+---
+id: sre_full_observability
+action_id: E3
+applies_when: 2+ fogged nodes AND total_revenue_at_risk > 30K
+node_targets: global
+duration_turns: 4
+cost: 200
+cto_pitch: "All nodes visible, all metrics live. No fog, no guessing. €10K/turn overhead but full situational awareness."
+
+---
+id: sre_auto_failover
+action_id: E4
+applies_when: revenue_critical node on a high-risk flow OR any node recently went offline
+node_targets: global
+duration_turns: 5
+cost: 150
+cto_pitch: "70% revenue preserved when nodes drop. 5-turn insurance against DDoS and patching downtime."
+
+---
+id: sre_infra_freeze
+action_id: E5
+applies_when: Byte just queued B4 (DDoS) OR high-value node is vulnerable to offline attack
+node_targets: global
+duration_turns: 1
+cost: 80
+cto_pitch: "DDoS immunity this turn. Blocks B4 cold. One-turn tactical shield for critical operations."
+
+---
+id: sre_cost_drive
+action_id: E6
+applies_when: total_costs > 60% of total_revenue AND no active crisis
+node_targets: global
+duration_turns: null
+cost: 50
+cto_pitch: "Cuts every node's operational cost by 1. Structural savings. Extends runway without touching revenue."
+
+---
+id: sre_optimize_bottleneck
+action_id: E1
+applies_when: flow with is_active=true has min_throughput node < 7
+node_targets: specific node (lowest throughput on highest-revenue flow)
+duration_turns: null
+cost: 40
+cto_pitch: null
+
+---
+id: sre_restore_offline
+action_id: E2
+applies_when: any node is offline or locked AND that node is on an active flow path
+node_targets: specific node (offline/locked)
+duration_turns: null
+cost: 60
+cto_pitch: null

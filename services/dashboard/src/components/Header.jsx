@@ -70,11 +70,11 @@ export default function Header({ company, nodes = [], flows = [] }) {
       display: 'flex', alignItems: 'center', justifyContent: 'space-between'
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        <TurnRadial turn={company.turn} />
+        <TurnRadial turn={company.turn} total={company.max_turns ?? 10} />
         <div style={{ fontFamily: 'Inter', fontWeight: 600, fontSize: 15, color: '#FFFFFF' }}>
           {company.name}
           <div style={{ color: '#CBD5E0', fontWeight: 400, fontSize: 10, letterSpacing: 0.5, marginTop: 1 }}>
-            TURN {company.turn} OF 10
+            TURN {company.turn} OF {company.max_turns ?? 10}
           </div>
         </div>
       </div>

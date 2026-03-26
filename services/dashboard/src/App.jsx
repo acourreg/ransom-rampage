@@ -46,10 +46,8 @@ export default function App() {
     if (rec === null) {
       setSelectedActions(prev => prev.filter(a => a.source !== 'ciso' && a.source !== 'sre'))
     } else {
-      // Accepting an advisor = clear everything (including CTO queue) and commit to this path
-      setSelectedActions([rec])
-      setPendingAction(null)
-      setSelectingTarget(false)
+      // Keep queued CTO actions — advisor + CTOs coexist and all execute on commit
+      setSelectedActions(prev => [...prev.filter(a => a.source === 'cto'), rec])
       setSelectedTarget(null)
       console.log('[ADVISOR ACCEPT]', rec.id, '→', rec.target)
     }
@@ -85,25 +83,44 @@ export default function App() {
   async function handleCommit() {
     if (selectedActions.length === 0) return
 
-    // Advisor always wins — if the player clicked Accept on an advisor,
-    // that's their intent regardless of what's in the CTO queue.
     const advisorAction = selectedActions.find(a => a.source === 'ciso' || a.source === 'sre')
-    const ctoAction     = selectedActions.find(a => a.source === 'cto')
-    const primary       = advisorAction ?? ctoAction
+    const ctoActions    = selectedActions.filter(a => a.source === 'cto')
 
-    if (!primary) return
+    // Advisor present → advisor = primary, CTOs sent as cto_actions
+    // No advisor → first CTO = primary, rest sent as cto_actions
+    let primaryId, primaryTarget, ctoPayload
 
-    const targetId = primary.source === 'cto' && primary.targetRequired
-      ? (primary.resolvedTarget ?? null)
-      : (primary.target ?? null)
-
-    if (primary.source === 'cto' && primary.targetRequired && !targetId) {
-      console.warn('[COMMIT] CTO action requires target — not resolved yet:', primary.label)
+    if (advisorAction) {
+      primaryId     = advisorAction.id
+      primaryTarget = advisorAction.target ?? null
+      ctoPayload    = ctoActions.map(a => ({
+        action_id: a.id,
+        target:    a.resolvedTarget ?? a.target ?? null,
+      }))
+    } else if (ctoActions.length > 0) {
+      const [first, ...rest] = ctoActions
+      primaryId     = first.id
+      primaryTarget = first.resolvedTarget ?? first.target ?? null
+      ctoPayload    = rest.map(a => ({
+        action_id: a.id,
+        target:    a.resolvedTarget ?? a.target ?? null,
+      }))
+    } else {
       return
     }
 
-    console.log('[COMMIT] →', primary.id, 'target:', targetId, 'source:', primary.source)
-    await commitTurn(primary.id, targetId)
+    // Validate all CTO targets
+    const unresolved = ctoPayload.find(c => {
+      const def = selectedActions.find(a => a.id === c.action_id && a.source === 'cto')
+      return def?.targetRequired && !c.target
+    })
+    if (unresolved) {
+      console.warn('[COMMIT] CTO action requires target — not resolved:', unresolved.action_id)
+      return
+    }
+
+    console.log('[COMMIT] primary:', primaryId, primaryTarget, '| cto:', ctoPayload)
+    await commitTurn(primaryId, primaryTarget, ctoPayload)
     setSelectedActions([])
     setPendingAction(null)
     setSelectedTarget(null)
@@ -174,6 +191,7 @@ export default function App() {
           selectingTarget={selectingTarget}
           loading={loading}
           turn={gameState?.company?.turn ?? 1}
+          maxTurns={gameState?.company?.max_turns ?? 10}
           forceAudit={(gameState?.company?.compliance ?? 1) < 0.5}
           vulnerabilities={gameState?.vulnerabilities ?? []}
           onSelectAdvisor={handleSelectAdvisor}
@@ -253,8 +271,8 @@ export default function App() {
               <div style={{ display: 'flex', gap: 12, marginBottom: 24 }}>
                 {[
                   { label: 'Cash Runway',    value: `€${(gameState.company.cash / 1000).toFixed(1)}M` },
-                  { label: 'Infrastructure', value: `${gameState.nodes.length} nodes` },
-                  { label: 'Threat Level',   value: gameState.company.adversary?.replace('_', ' ') ?? '?' },
+                  { label: 'Sector',          value: gameState.company.sector ?? 'Fintech' },
+                  { label: 'Compliance',      value: `${Math.round((gameState.company.compliance ?? 0.7) * 100)}%` },
                 ].map(({ label, value }) => (
                   <div key={label} style={{
                     flex: 1, background: '#F8FAFC', borderRadius: 8,
@@ -284,7 +302,7 @@ export default function App() {
                   cursor: 'pointer', letterSpacing: 0.3,
                 }}
               >
-                ⚡ Start Simulation — Turn 1 / 10
+                ⚡ Start Simulation — Turn 1 / {gameState?.company?.max_turns ?? 10}
               </button>
               <p style={{ textAlign: 'center', fontSize: 11, color: '#94A3B8', marginTop: 10, marginBottom: 0 }}>
                 A hacker is already scanning your perimeter.

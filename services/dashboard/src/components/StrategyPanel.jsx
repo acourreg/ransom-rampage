@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 
 const CTO_ACTIONS = [
+  { id:'C0', label:'Scan Node',        cost:50,  targetRequired: true,  desc: 'Reveals vulnerabilities + removes fog on target node. Required before Patch.' },
   { id:'C1', label:'Report Breach',    cost:20,  targetRequired: false, desc: 'Reset breach timer. Avoids regulatory fine. −5% reputation.' },
   { id:'C2', label:'Boost Throughput', cost:25,  targetRequired: true,  desc: 'throughput +2 on target. Immediate revenue lift on bottleneck nodes.' },
   { id:'C3', label:'Patch Vuln',       cost:30,  targetRequired: true,  desc: '⚠ Node goes OFFLINE 1 turn. Removes 1 known vuln. Does NOT increase defense — use Reinforce (C7) for that.' },
@@ -14,18 +15,24 @@ const CTO_ACTIONS = [
 
 // Which targeted actions make sense per node type
 const TYPE_ACTIONS = {
-  entry:      new Set(['C2', 'C3', 'C4', 'C5', 'C7', 'C8']),
-  human:      new Set(['C2', 'C5', 'C7', 'C8']),
-  vendor:     new Set(['C3', 'C4', 'C5', 'C7']),
-  database:   new Set(['C2', 'C3', 'C4', 'C5', 'C6', 'C7']),
-  server:     new Set(['C2', 'C3', 'C4', 'C5', 'C7']),
-  middleware: new Set(['C2', 'C3', 'C4', 'C5', 'C7']),
+  entry:      new Set(['C0', 'C2', 'C3', 'C4', 'C5', 'C7', 'C8']),
+  human:      new Set(['C0', 'C2', 'C5', 'C7', 'C8']),
+  vendor:     new Set(['C0', 'C3', 'C4', 'C5', 'C7']),
+  database:   new Set(['C0', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7']),
+  server:     new Set(['C0', 'C2', 'C3', 'C4', 'C5', 'C7']),
+  middleware: new Set(['C0', 'C2', 'C3', 'C4', 'C5', 'C7']),
 }
 
 function getActionDisabledReason(action, node, vulnerabilities) {
   if (!node) return null
   switch (action.id) {
-    case 'C2': if ((node.throughput ?? 0) >= 10) return 'Throughput already maxed'
+    case 'C0': {
+      if (!node.fogged && !(vulnerabilities ?? []).some(v => v.node_id === node.id && !v.known_by_player))
+        return 'Node already scanned — nothing to reveal'
+      break
+    }
+    case 'C2':
+      if ((node.throughput ?? 0) >= 10) return 'Throughput already maxed'
       break
     case 'C3': {
       const hasKnownVuln = (vulnerabilities ?? []).some(v => v.node_id === node.id && v.known_by_player)
@@ -49,12 +56,24 @@ function getActionDisabledReason(action, node, vulnerabilities) {
   return null
 }
 
+function isBottleneckOnActiveFlow(node, gameState) {
+  if (!node || !gameState?.flows || !gameState?.nodes) return false
+  return gameState.flows.some(f =>
+    f.is_active &&
+    f.node_path?.includes(node.id) &&
+    f.node_path.every(nid => {
+      const n = gameState.nodes.find(x => x.id === nid)
+      return !n || (n.throughput ?? 10) >= (node.throughput ?? 10)
+    })
+  )
+}
+
 const PARADIGM_IDS = new Set(['S2', 'S4', 'S5', 'S6', 'E3', 'E4', 'E5', 'E6'])
 const AUDIT_EXEMPT_CTO = new Set(['C1', 'C5', 'C7'])
 
 export default function StrategyPanel({
   advisorRecs, gameState, selectedActions, selectedTarget,
-  selectingTarget, loading, turn, forceAudit, vulnerabilities,
+  selectingTarget, loading, turn, maxTurns, forceAudit, vulnerabilities,
   onSelectAdvisor, onSelectCto, onCommit, onStartTargetSelect
 }) {
   const cash = gameState?.company?.cash ?? 0
@@ -160,12 +179,23 @@ export default function StrategyPanel({
                 </div>
               )
               const isSelected = selectedActions.some(a => a.source === role && a.id === rec.action_id)
+              const isPolicy = !!rec.policy_id
+              const policyBg = isSelected ? '#EFF6FF' : isPolicy
+                ? (role === 'ciso' ? '#F5F3FF' : '#F0FDF4')
+                : '#FFFFFF'
+              const barWidth = isPolicy ? 24 : 20
+              const barStyle = isPolicy
+                ? { borderLeft: 'none', borderImage: role === 'ciso'
+                    ? 'linear-gradient(180deg, #7C3AED, #2563EB) 1'
+                    : 'linear-gradient(180deg, #10B981, #059669) 1',
+                  borderImageSlice: 1, borderLeftWidth: barWidth, borderLeftStyle: 'solid' }
+                : { borderLeft: `${barWidth}px solid ${accentColor}` }
               return (
                 <div key={role} style={{
                   ...advisorCard,
-                  borderLeft: `20px solid ${accentColor}`,
+                  ...barStyle,
                   padding: '14px 14px 14px 16px',
-                  background: isSelected ? '#EFF6FF' : '#FFFFFF',
+                  background: policyBg,
                   outline: isSelected ? `2px solid ${accentColor}` : 'none'
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
@@ -176,36 +206,47 @@ export default function StrategyPanel({
                       onError={e => { e.target.style.display = 'none' }}
                     />
                     <div>
-                      <div style={{ fontFamily: 'Inter', fontSize: 10, fontWeight: 600, color: accentColor, textTransform: 'uppercase', letterSpacing: 1 }}>
-                        {role === 'ciso' ? 'CISO' : 'SRE'}
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                        <span style={{ fontFamily: 'Inter', fontWeight: 700, fontSize: 13, color: '#0F172A', lineHeight: 1.2 }}>
-                          {rec.action_label}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <span style={{ fontFamily: 'Inter', fontSize: 10, fontWeight: 600, color: accentColor, textTransform: 'uppercase', letterSpacing: 1 }}>
+                          {role === 'ciso' ? 'CISO' : 'SRE'}
                         </span>
-                        {PARADIGM_IDS.has(rec.action_id) && (
+                        {isPolicy && (
                           <span style={{
                             background: '#7C3AED', color: '#FFFFFF',
                             borderRadius: 10, padding: '2px 7px',
                             fontSize: 9, fontWeight: 700, letterSpacing: 0.5,
                             whiteSpace: 'nowrap',
-                          }}>⚡ Policy</span>
+                          }}>⚡ POLICY</span>
                         )}
                       </div>
+                      <span style={{ fontFamily: 'Inter', fontWeight: 700, fontSize: 13, color: '#0F172A', lineHeight: 1.2 }}>
+                        {rec.action_label}
+                      </span>
                     </div>
                   </div>
+                  {isPolicy && rec.cto_pitch && (
+                    <div style={{
+                      fontFamily: 'Inter', fontSize: 11, color: '#334155',
+                      fontStyle: 'italic', marginBottom: 8,
+                      borderLeft: '3px solid #E2E8F0', paddingLeft: 10, lineHeight: 1.5,
+                    }}>
+                      "{rec.cto_pitch}"
+                    </div>
+                  )}
                   <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: 8 }}>
+                    <tbody>
                     {[
-                      ['Cost',    `€${rec.cost}K`],
-                      ['Time',    '1 Turn'],
-                      ['Benefit', rec.action_description],
-                      ['Risk',    rec.revenue_impact],
-                    ].map(([label, val]) => (
+                      ['Cost',     `€${rec.cost}K`],
+                      ['Duration', isPolicy && rec.duration_turns ? `${rec.duration_turns} turns` : '1 Turn'],
+                      ['Benefit',  rec.cto_pitch && isPolicy ? null : rec.action_description],
+                      ['Risk',     rec.revenue_impact],
+                    ].filter(([, val]) => val != null).map(([label, val]) => (
                       <tr key={label}>
                         <td style={{ fontFamily: 'Inter', fontSize: 10, color: '#94A3B8', paddingBottom: 3, width: 55 }}>{label}</td>
                         <td style={{ fontFamily: label === 'Cost' ? 'JetBrains Mono' : 'Inter', fontSize: 10, color: '#0F172A', paddingBottom: 3 }}>{val}</td>
                       </tr>
                     ))}
+                    </tbody>
                   </table>
                   <button
                     onClick={() => isSelected
@@ -284,6 +325,19 @@ export default function StrategyPanel({
                     )
                   })}
                 </div>
+                {hoveredAction && hoveredAction.id === 'C2' && !getActionDisabledReason(hoveredAction, selectedTarget, vulnerabilities) && (
+                  <div style={{
+                    marginBottom: 8, padding: '6px 10px',
+                    background: isBottleneckOnActiveFlow(selectedTarget, gameState) ? '#F0FDF4' : '#FFFBEB',
+                    border: `1px solid ${isBottleneckOnActiveFlow(selectedTarget, gameState) ? '#10B981' : '#F59E0B'}`,
+                    borderRadius: 6, fontFamily: 'Inter', fontSize: 11,
+                    color: isBottleneckOnActiveFlow(selectedTarget, gameState) ? '#059669' : '#92400E',
+                  }}>
+                    {isBottleneckOnActiveFlow(selectedTarget, gameState)
+                      ? `⚡ Bottleneck on active flow — throughput +2 will increase revenue directly.`
+                      : `⚠ Not the current bottleneck — revenue won't increase until slower nodes are boosted.`}
+                  </div>
+                )}
                 {hoveredAction && getActionDisabledReason(hoveredAction, selectedTarget, vulnerabilities) && (
                   <div style={{
                     marginBottom: 8, padding: '6px 10px',
@@ -402,7 +456,7 @@ export default function StrategyPanel({
           }}
         >
           {loading ? '⏳ Agents deliberating...'
-            : canCommit ? `COMMIT STRATEGY (Turn ${turn})`
+            : canCommit ? `COMMIT (Turn ${turn}/${maxTurns ?? 10})`
             : 'Select an action first'}
         </button>
       </div>

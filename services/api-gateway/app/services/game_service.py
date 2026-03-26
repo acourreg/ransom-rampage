@@ -19,7 +19,7 @@ from copy import deepcopy
 
 from app.storage.redis_store import save_game, load_game
 from app.core.generation import game_generator
-from app.core.engine import execute_turn, resolve_player_mutations
+from app.core.engine import execute_turn, resolve_player_mutations, _resolve_player_action, apply_mutations
 from app.core.logger import (
     log_game_created, log_player_action, log_player_decision,
     log_byte_action, log_state_snapshot, log_advisor_suggestion, log_game_over,
@@ -155,7 +155,7 @@ async def get_suggestions(state: dict, session_id: str = 'unknown') -> dict:
 # TURN EXECUTION
 # ══════════════════════════════════════════════════════════════
 
-async def play_turn(session_id: str, action_id: str, target: str | None = None) -> dict:
+async def play_turn(session_id: str, action_id: str, target: str | None = None, cto_actions: list | None = None) -> dict:
     """
     Execute one game turn:
       1. Load state
@@ -176,7 +176,10 @@ async def play_turn(session_id: str, action_id: str, target: str | None = None) 
         raise ValueError('Game is already over')
 
     current_turn = state.get('company', {}).get('turn', 0) + 1
+    cto_summary = ', '.join(f"{c['action_id']}:{c.get('target')}" for c in (cto_actions or []))
     log_player_action(session_id, current_turn, action_id, target)
+    if cto_actions:
+        print(f"[PLAYER_ACTION] advisor={action_id} target={target} | cto=[{cto_summary}]")
 
     loop = asyncio.get_event_loop()
 
@@ -204,7 +207,15 @@ async def play_turn(session_id: str, action_id: str, target: str | None = None) 
         byte_rec.get('target')    if isinstance(byte_rec, dict) else None,
     )
 
-    # ── Engine: full turn resolution ──
+    # ── CTO actions: resolve before engine (applied to state, engine sees the result) ──
+    for cto in (cto_actions or []):
+        cto_muts = _resolve_player_action(cto['action_id'], cto.get('target'), state)
+        _, cto_applied = apply_mutations(state, cto_muts)
+        print(f"[CTO] {cto['action_id']} target={cto.get('target')} → {len(cto_applied)} mutations")
+        for a in cto_applied:
+            print(f"  → {a['node_id']}.{a['attribute']}: {a.get('old_value')} → {a['new_value']}")
+
+    # ── Engine: full turn resolution (primary action resolved inside) ──
     new_state = await loop.run_in_executor(
         None, execute_turn, state, action_id, target, byte_rec
     )

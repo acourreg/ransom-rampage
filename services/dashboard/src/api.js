@@ -23,5 +23,5 @@ export const createGame    = (user_prompt, options = {}) => request('POST', '/ga
 })
 export const getGame       = (session_id)           => request('GET',  `/games/${session_id}`)
 export const getSuggestions = (session_id)          => request('GET',  `/games/${session_id}/suggestions`)
-export const playTurn      = (session_id, action_id, target) =>
-  request('POST', `/games/${session_id}/turn`, { action_id, target })
+export const playTurn      = (session_id, action_id, target, cto_actions = []) =>
+  request('POST', `/games/${session_id}/turn`, { action_id, target, cto_actions })

@@ -1,4 +1,7 @@
+// 25 thematics × 25 domain traits × 25 contexts = 15 625 unique combinations
+
 export const STARTUP_THEMATICS = [
+  // original 20
   "neobank for freelancers who distrust banks (and accountants)",
   "crypto savings app for Gen Z with trust issues",
   "B2B expense management that your CFO hates",
@@ -19,9 +22,16 @@ export const STARTUP_THEMATICS = [
   "SME invoice factoring with a 'disrupting' pitch deck",
   "loyalty points monetization because your miles expire anyway",
   "open banking aggregator nobody asked for but here we are",
+  // new 5
+  "peer-to-peer FX for expats who never read the fine print",
+  "on-demand salary advances for workers who spend it immediately",
+  "ESG investment platform marketed to people who drive SUVs",
+  "trade finance platform bridging emerging markets and PowerPoint decks",
+  "digital mortgage broker whose AI rejected your last application",
 ]
 
 export const DOMAIN_CHARACTERISTICS = [
+  // original 20
   "targeting markets where regulators haven't caught up yet",
   "built on a blockchain nobody audited",
   "using AI risk scoring trained on vibes",
@@ -42,6 +52,40 @@ export const DOMAIN_CHARACTERISTICS = [
   "operating without a permanent CTO since March",
   "running production on the IT budget of a medium dentist office",
   "freshly merged with their main competitor in a deal nobody approved",
+  // new 5
+  "onboarding 50k users per day with zero capacity planning",
+  "ISO 27001 certified — the auditors didn't ask the right questions",
+  "relying on a single third-party API that has 99.1% uptime (not enough)",
+  "whose founding engineer left last month with full prod access",
+  "under a 72-hour breach disclosure deadline they just missed",
+]
+
+export const OPERATIONAL_CONTEXTS = [
+  "whose Slack is public and their staging env is on the same domain",
+  "that outsourced their security to a contractor who ghosted them",
+  "whose on-call rotation is one person, and they're on vacation",
+  "that runs 14 microservices no one fully understands anymore",
+  "with a board demanding a security audit they keep postponing",
+  "that recently migrated to cloud and left the old servers running",
+  "whose CI/CD pipeline has God-mode access to production",
+  "where the CTO role is held by the co-founder's college roommate",
+  "whose API keys are hardcoded in a public GitHub commit from 2021",
+  "that stores customer PII in a spreadsheet on Google Drive",
+  "whose prod database has no backups since the last restructure",
+  "that just fired its DevSecOps team to cut burn rate",
+  "where MFA is 'optional' because users complained it was annoying",
+  "that sends plaintext passwords in welcome emails",
+  "whose last pentest was conducted by an intern with Kali Linux",
+  "that keeps its disaster recovery plan in a folder no one can find",
+  "whose vendor contracts have zero security SLAs",
+  "relying on a legacy VPN that hasn't been patched in 18 months",
+  "that logs everything but monitors nothing",
+  "where 'security review' means a Slack thumbs-up from the CTO",
+  "whose customer support team has access to all accounts",
+  "that uses the same password for all third-party integrations",
+  "currently being migrated by two contractors with conflicting PRs open",
+  "whose compliance dashboard is manually updated every quarter",
+  "that just passed SOC 2 Type I and is ignoring Type II",
 ]
 
 export const THREAT_AGENTS = [
@@ -84,17 +128,18 @@ export const GRAPH_SHAPES = [
 export const NODE_COUNT_RANGE = { min: 4, max: 12 }
 
 export function buildGenerationPrompt() {
-  const thematic   = STARTUP_THEMATICS[Math.floor(Math.random() * STARTUP_THEMATICS.length)]
-  const domain     = DOMAIN_CHARACTERISTICS[Math.floor(Math.random() * DOMAIN_CHARACTERISTICS.length)]
-  const shape      = GRAPH_SHAPES[Math.floor(Math.random() * GRAPH_SHAPES.length)]
-  const nodeCount  = Math.floor(Math.random() * (NODE_COUNT_RANGE.max - NODE_COUNT_RANGE.min + 1)) + NODE_COUNT_RANGE.min
-  const threat     = pickThreatAgent()
+  const thematic  = STARTUP_THEMATICS[Math.floor(Math.random() * STARTUP_THEMATICS.length)]
+  const domain    = DOMAIN_CHARACTERISTICS[Math.floor(Math.random() * DOMAIN_CHARACTERISTICS.length)]
+  const context   = OPERATIONAL_CONTEXTS[Math.floor(Math.random() * OPERATIONAL_CONTEXTS.length)]
+  const shape     = GRAPH_SHAPES[Math.floor(Math.random() * GRAPH_SHAPES.length)]
+  const nodeCount = Math.floor(Math.random() * (NODE_COUNT_RANGE.max - NODE_COUNT_RANGE.min + 1)) + NODE_COUNT_RANGE.min
+  const threat    = pickThreatAgent()
 
   return {
-    prompt:      `Generate a fintech startup: ${thematic}, ${domain}`,
+    prompt:      `Generate a fintech startup: ${thematic}, ${domain}, ${context}`,
     shape,
     nodeCount,
     threatAgent: threat,
-    meta: { thematic, domain, shape, nodeCount, threatName: threat.name, threatDesc: threat.desc },
+    meta: { thematic, domain, context, shape, nodeCount, threatName: threat.name, threatDesc: threat.desc },
   }
 }
