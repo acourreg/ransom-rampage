@@ -2,17 +2,21 @@
 
 > Can you keep the lights on? A hacker is coming. Your board is watching.
 
-AI-powered cybersecurity simulation where you defend a fintech startup against a live ransomware attack. Every architectural decision has mechanical consequences on revenue, compliance, and survival.
+AI-powered cybersecurity simulation where you defend a fintech startup against an AI-driven attacker — from lateral movement and data exfiltration to ransomware and reputation attacks. Balance security, SRE optimization, and business survival across 15 turns.
+
+## Screenshots
 
 ![Landing](docs/screenshots/landing.png)
 
+![Game Start](docs/screenshots/game_start.png)
+
+![Gameplay](docs/screenshots/gameplay.png)
+
 ## How It Works
 
-1. **Generate a scenario** — describe any fintech startup. AI creates a complete company: infrastructure graph, revenue streams, vulnerabilities, and an adversary.
-2. **Defend against a live hacker** — an AI-driven attacker (powered by a dedicated LangGraph agent) probes your infrastructure each turn.
-3. **Survive the simulation** — balance cash runway, board trust, compliance, and revenue across 15 turns while CISO and SRE advisors recommend actions.
-
-![Game Start](docs/screenshots/game_start.png)
+1. **Generate a scenario** — describe any fintech startup. AI creates a complete company: infrastructure graph (4–12 nodes, 7 types), revenue streams, vulnerabilities, and one of 20 named adversary personas.
+2. **Defend against a live attacker** — the AI-driven adversary compromises nodes, exfiltrates data, locks systems, and attacks your reputation. CISO and SRE advisors recommend actions.
+3. **Survive 15 turns** — queue security hardening, SRE optimization, and business actions. Balance cash runway, board trust, compliance, and revenue to keep the company alive.
 
 ## Architecture
 
@@ -35,7 +39,7 @@ Scenarios are generated via a 3-node LangGraph pipeline:
 ![Entity Gen Pipeline](docs/screenshots/entity_gen_pipeline.png)
 
 - **Venture Architect** — generates company profile, sector, adversary (RAG on fintech archetypes)
-- **SRE Infra** — creates 7-node infrastructure graph with typed nodes (RAG on tech corpus)
+- **SRE Infra** — creates a 4–12 node infrastructure graph across 7 node types (RAG on tech corpus)
 - **Assembler** — wires revenue flows, vulnerabilities, fog-of-war, validates GDD compliance
 
 ### Generated Infrastructure Example
@@ -44,18 +48,13 @@ Scenarios are generated via a 3-node LangGraph pipeline:
 
 Each node has throughput, defense, visibility, cost, and compliance scores. Revenue flows traverse node paths — if a node goes offline, revenue drops mechanically.
 
-### Gameplay — Advisor Recommendations & Action Queue
-
-![Gameplay](docs/screenshots/gameplay.png)
-
-The CTO (player) queues actions each turn: harden nodes, boost throughput, scan for threats, patch vulnerabilities, or isolate compromised systems. CISO and SRE advisors provide risk-assessed recommendations with cost/benefit analysis.
-
 ## Game Engine
 
 - **100% deterministic** — no RNG. Outcomes derive strictly from infrastructure traits and revenue flows.
 - **Resolution engine**: `tick → byte (hacker) → regulator → player → recalculate`
 - **Revenue model**: `base_revenue × min(throughput) / 10` across node paths
-- **Win/lose conditions**: cash runway, compliance thresholds, board trust, breach timers (per GDD §12)
+- **21 player actions** across 3 roles: CTO strategic (C1–C9), CISO security (S1–S6), SRE infrastructure (E1–E6)
+- **Win/lose conditions**: cash runway, compliance thresholds, board trust, breach timers
 
 ## Tech Stack
 
@@ -63,7 +62,7 @@ The CTO (player) queues actions each turn: harden nodes, boost throughput, scan 
 |-------|------|
 | AI Agents | LangGraph · LangChain · OpenAI API · FAISS |
 | Backend | FastAPI · Redis · Pydantic |
-| Frontend | React · Vite |
+| Frontend | React · Vite · nginx |
 | Vector DBs | FAISS (5 domain-specific corpora, BGE-M3 embeddings) |
 | Infra | Docker · AWS (planned) |
 
