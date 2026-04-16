@@ -1,7 +1,7 @@
 # Cluster and its role
 
 resource "aws_eks_cluster" "ransom_rampage_cluster" {
-  name = "ransom-rampage-cluster"
+  name = var.cluster_name
 
   access_config {
     authentication_mode = "API"
@@ -97,4 +97,56 @@ resource "aws_iam_role_policy_attachment" "AmazonEKS_CNI_Policy" {
 resource "aws_iam_role_policy_attachment" "AmazonEC2ContainerRegistryReadOnly" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
   role       = aws_iam_role.eks_node_role.name
+}
+
+
+
+# Fetch cluster's public key to validate pod JWTs
+data "tls_certificate" "eks" {
+  url = aws_eks_cluster.ransom_rampage_cluster.identity[0].oidc[0].issuer
+}
+
+# Register EKS as trusted identity provider in AWS IAM
+resource "aws_iam_openid_connect_provider" "eks" {
+  url             = aws_eks_cluster.ransom_rampage_cluster.identity[0].oidc[0].issuer
+  client_id_list  = ["sts.amazonaws.com"]
+  thumbprint_list = [data.tls_certificate.eks.certificates[0].sha1_fingerprint]
+}
+
+# IAM role assumed by ESO to read SSM params
+# Trust policy: only the ESO service account in its namespace can assume this
+resource "aws_iam_role" "eso_role" {
+  name = "ransom-rampage-eso-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect    = "Allow"
+      Principal = {
+        Federated = aws_iam_openid_connect_provider.eks.arn
+      }
+      Action    = "sts:AssumeRoleWithWebIdentity"
+      Condition = {
+        StringEquals = {
+          "${replace(aws_iam_openid_connect_provider.eks.url, "https://", "")}:sub" =
+            "system:serviceaccount:external-secrets:external-secrets"
+        }
+      }
+    }]
+  })
+}
+
+# Allow ESO role to read only our SSM parameters
+resource "aws_iam_role_policy" "eso_ssm_policy" {
+  name = "eso-ssm-read"
+  role = aws_iam_role.eso_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect   = "Allow"
+      Action   = ["ssm:GetParameter", "ssm:GetParameters"]
+      Resource = "arn:aws:ssm:eu-west-1:*:parameter/ransom-rampage/*"
+    }]
+  })
 }

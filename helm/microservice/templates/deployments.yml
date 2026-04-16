@@ -1,0 +1,50 @@
+# helm/microservice/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name | lower }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  # THE SELECTOR: The manager's "Target List"
+  selector:
+    matchLabels:
+      app: {{ .Release.Name | lower }}
+  
+  # THE TEMPLATE: The "Cookie Cutter"
+  template:
+    metadata:
+      labels:
+        # This matches the selector above!
+        app: {{ .Release.Name | lower }}
+    spec:
+      containers:
+        - name: app
+          image: {{ .Values.image.repository | default "my-app" }}
+          ports:
+            - containerPort: {{ .Values.service.port | default 80 }}
+          
+          # --- ADD THIS SECTION ---
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          
+          # Health Checks (using your values)
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.probes.path }}
+              port: {{ .Values.service.port }}
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.probes.path }}
+              port: {{ .Values.service.port }}
+
+          env:
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: OPENAI_API_KEY
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: REDIS_URL

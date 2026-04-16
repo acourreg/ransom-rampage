@@ -9,6 +9,7 @@ resource "aws_ecr_repository" "services_repo" {
 }
 
 resource "aws_ecr_lifecycle_policy" "services_repo_policy" {
+  for_each   = var.services
   repository = aws_ecr_repository.services_repo[each.key].name
   policy = data.aws_ecr_lifecycle_policy_document.services_repo_policy_doc.json
 }

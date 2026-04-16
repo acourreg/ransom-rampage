@@ -1,6 +1,6 @@
 variable "cluster_name" {
   type = string
-  default = "ransom_rampage_vpc"
+  default = "ransom-rampage-cluster"
 }
 
 variable "aws_region" {

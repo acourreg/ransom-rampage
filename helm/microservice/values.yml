@@ -1,0 +1,24 @@
+# Default number of replicas for High Availability
+replicaCount: 2
+
+image:
+  repository: IMAGE_URL  # Placeholder to be overridden by CI/CD
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+service:
+  type: ClusterIP
+  port: 80               # Default port (common for web)
+
+resources:
+  limits:
+    cpu: 200m
+    memory: 256Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+# Default health check settings
+probes:
+  path: /health
+  port: 80
