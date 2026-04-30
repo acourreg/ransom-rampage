@@ -1,0 +1,36 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ransom-rampage-public
+  namespace: ransom-rampage
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/group.name: ransom-rampage
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/auth-type: none
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /health
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: api-gateway
+            port:
+              number: 8000
+      - path: /assets/*
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: dashboard
+            port:
+              number: 80
+      - path: /
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: dashboard
+            port:
+              number: 80

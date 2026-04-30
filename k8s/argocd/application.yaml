@@ -1,0 +1,57 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: api-gateway
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/acourreg/ransom-rampage.git
+    targetRevision: main
+    path: helm/microservice
+    helm:
+      valueFiles:
+        - values.yml
+      parameters:
+        - name: image.tag
+          value: latest
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: ransom-rampage
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: dashboard
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/acourreg/ransom-rampage.git
+    targetRevision: main
+    path: helm/microservice
+    helm:
+      valueFiles:
+        - values.yml
+      parameters:
+        - name: image.tag
+          value: latest
+        - name: service.port
+          value: "80"
+        - name: containerPort
+          value: "3000"
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: ransom-rampage
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

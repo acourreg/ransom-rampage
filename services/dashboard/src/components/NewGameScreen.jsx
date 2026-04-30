@@ -1,3 +1,6 @@
+// PlayScreen — accessed at /play
+// On prod (EKS): ALB Cognito auth required before reaching this page
+// On local: directly accessible (auth bypassed)
 import { useState } from 'react'
 import { buildGenerationPrompt } from '../config/startupThemes.js'
 

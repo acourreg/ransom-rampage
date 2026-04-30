@@ -8,6 +8,9 @@ export default defineConfig({
     proxy: {
       '/api': 'http://localhost:8000',
       '/health': 'http://localhost:8000'
-    }
-  }
+    },
+  },
+  build: {
+    outDir: 'dist',
+  },
 })

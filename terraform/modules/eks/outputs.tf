@@ -12,3 +12,7 @@ output "eso_role_arn" {
   description = "Annotate ESO service account with this ARN"
   value       = aws_iam_role.eso_role.arn
 }
+
+output "alb_controller_role_arn" {
+  value = aws_iam_role.alb_controller.arn
+}

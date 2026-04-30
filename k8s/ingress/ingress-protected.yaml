@@ -1,0 +1,42 @@
+# AFTER terraform apply, replace PLACEHOLDERs with:
+#   PLACEHOLDER_ACM_ARN       → terraform output -raw acm_certificate_arn
+#   PLACEHOLDER_USER_POOL_ARN → terraform output -raw cognito_user_pool_arn
+#   PLACEHOLDER_CLIENT_ID     → terraform output -raw cognito_user_pool_client_id
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ransom-rampage-protected
+  namespace: ransom-rampage
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/group.name: ransom-rampage
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/auth-type: cognito
+    alb.ingress.kubernetes.io/auth-on-unauthenticated-request: authenticate
+    alb.ingress.kubernetes.io/auth-idp-cognito: >
+      {
+        "userPoolARN": "PLACEHOLDER_USER_POOL_ARN",
+        "userPoolClientID": "PLACEHOLDER_CLIENT_ID",
+        "userPoolDomain": "ransomrampage"
+      }
+    alb.ingress.kubernetes.io/certificate-arn: "PLACEHOLDER_ACM_ARN"
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /play/*
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: dashboard
+            port:
+              number: 80
+      - path: /api/*
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: api-gateway
+            port:
+              number: 8000

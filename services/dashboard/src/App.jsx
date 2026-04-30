@@ -1,4 +1,6 @@
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { useState } from 'react'
+import HomePage from './components/HomePage.jsx'
 import useGame from './hooks/useGame.js'
 import NewGameScreen from './components/NewGameScreen.jsx'
 import GameOverModal from './components/GameOverModal.jsx'
@@ -8,7 +10,7 @@ import TriageBoard from './components/TriageBoard.jsx'
 import StrategyPanel from './components/StrategyPanel.jsx'
 import WarRoom from './components/WarRoom.jsx'
 
-export default function App() {
+function GameApp() {
   const {
     sessionId, gameState, advisorRecs,
     loading, error, gameOver, gameOverReason,
@@ -312,5 +314,18 @@ export default function App() {
         </div>
       )}
     </div>
+  )
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/play" element={<GameApp />} />
+        <Route path="/play/:sessionId" element={<GameApp />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </BrowserRouter>
   )
 }
