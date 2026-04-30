@@ -1,7 +1,6 @@
 # Core game engine — turn resolution, mutation primitives, revenue, win/lose.
 # game_service is the only caller: engine owns all GDD business logic.
 
-from typing import List, Dict, Any, Tuple
 import copy
 import random
 
@@ -643,7 +642,7 @@ def _check_win_lose(state: dict, turn_num: int) -> tuple[bool, str | None]:
                 company.get('compliance', 0.7) > 0.5 and
                 company.get('reputation', 0.8) > 0.3):
             return True, f'🏆 VICTOIRE — survécu {max_turns} tours !'
-        return True, f'❌ Défaite — survécu mais pas assez solide'
+        return True, '❌ Défaite — survécu mais pas assez solide'
 
     return False, None
 

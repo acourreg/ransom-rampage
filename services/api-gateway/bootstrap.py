@@ -1,7 +1,6 @@
 from app.config import settings
 from app.storage.redis_store import init_redis, close_redis
 from app.storage.vector_store import vectorstore
-import asyncio
 
 # Lazy singletons
 _redis = None
@@ -32,7 +31,6 @@ async def startup():
     print("✅ Bootstrap complete: Redis, FAISS, LLM, agent graphs initialized")
 
 async def shutdown():
-    from app.storage.redis_store import close_redis
     await close_redis()
     print("✅ Bootstrap shutdown: Redis closed")
 

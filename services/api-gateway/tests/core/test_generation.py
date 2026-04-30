@@ -1,4 +1,3 @@
-import pytest
 from app.core.generation import game_generator
 
 class TestGenerationE2E:

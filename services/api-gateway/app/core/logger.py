@@ -197,12 +197,18 @@ def log_state_snapshot(session_id: str, turn: int, state: dict) -> None:
     node_lines = []
     for n in nodes:
         flags = []
-        if n.get('compromised'): flags.append('COMPROMISED')
-        if n.get('locked'):      flags.append('LOCKED')
-        if n.get('offline'):     flags.append(f"OFFLINE({n.get('offline_turns', 0)}t)")
-        if n.get('isolated'):    flags.append('ISOLATED')
-        if n.get('fogged'):      flags.append('FOGGED')
-        if n.get('has_mfa'):     flags.append('MFA')
+        if n.get('compromised'):
+            flags.append('COMPROMISED')
+        if n.get('locked'):
+            flags.append('LOCKED')
+        if n.get('offline'):
+            flags.append(f"OFFLINE({n.get('offline_turns', 0)}t)")
+        if n.get('isolated'):
+            flags.append('ISOLATED')
+        if n.get('fogged'):
+            flags.append('FOGGED')
+        if n.get('has_mfa'):
+            flags.append('MFA')
         status = ' '.join(flags) if flags else 'clean'
         node_lines.append(
             f"    {n['id']:4s} {n.get('business_name', n.get('name', '?'))[:28]:28s} "

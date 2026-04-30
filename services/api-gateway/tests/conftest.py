@@ -1,11 +1,9 @@
-import os
+import pytest
+import copy
+
 from dotenv import load_dotenv
 
 load_dotenv()  # Charge .env pour OPENAI_API_KEY
-
-import pytest
-import copy
-import json
 
 # ============================================================
 # Canonical fake_state for all tests (from notebook cell 14)

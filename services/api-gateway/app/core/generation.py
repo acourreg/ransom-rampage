@@ -1,11 +1,10 @@
 # Game generation pipeline — LangGraph orchestration of 4 agents.
 # Each agent is a focused function; the node wrappers are thin.
 
-from app.storage.vector_store import vectorstore, similarity_search
+from app.storage.vector_store import vectorstore
 
 from typing import TypedDict, Dict, Any
 import json
-import copy
 import random
 from langgraph.graph import StateGraph, END
 from langchain_core.output_parsers import JsonOutputParser

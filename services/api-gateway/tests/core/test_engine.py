@@ -1,4 +1,3 @@
-import pytest
 import copy
 from app.core.engine import extract_mutations, apply_mutations, calculate_revenue, execute_turn
 
