@@ -34,8 +34,8 @@ variable "services" {
     dashboard = {
       ecr_name = "dashboard"
     }
-    api_gateway = {
-      ecr_name = "api_gateway"
+    api-gateway = {
+      ecr_name = "api-gateway"
     }
   }
 }
