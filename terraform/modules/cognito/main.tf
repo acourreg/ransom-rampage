@@ -15,7 +15,7 @@ resource "aws_cognito_user_pool_client" "main" {
     "https://ransomrampage.auth.eu-west-1.amazoncognito.com/oauth2/idpresponse"
   ]
 
-  allowed_oauth_flows                  = ["authorization_code"]
+  allowed_oauth_flows                  = ["code"]
   allowed_oauth_scopes                 = ["openid", "email", "profile"]
   supported_identity_providers         = ["Google"]
   allowed_oauth_flows_user_pool_client = true

@@ -7,3 +7,9 @@ services/agent-service/faiss_indexes/
 *.pkg
 services/api-gateway/.env
 services/api-gateway/logs/*.log
+
+# Terraform
+terraform/.terraform/
+terraform/*.tfstate
+terraform/*.tfstate.backup
+terraform/errored.tfstate

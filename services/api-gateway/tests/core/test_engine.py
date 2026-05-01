@@ -51,29 +51,28 @@ class TestEngineE2E:
 
         # 9. execute_turn — turn incrémente, revenue recalculée
         turn_state = copy.deepcopy(fake_state)
-        empty_recs = {"ciso": {"mutations": []}, "sre": {"mutations": []}, "hacker": {"mutations": []}}
-        result = execute_turn(turn_state, "C6", empty_recs)
+        empty_byte = {"action_id": "B1", "target": None}
+        result = execute_turn(turn_state, "C6", None, empty_byte)
         assert result["company"]["turn"] == 4
         assert "cash" in result["company"]
 
         # 10. execute_turn — core DB locked = game over
         go_state = copy.deepcopy(fake_state)
         next(n for n in go_state["nodes"] if n["id"] == "n4")["locked"] = True
-        result2 = execute_turn(go_state, "C6", empty_recs)
+        result2 = execute_turn(go_state, "C6", None, empty_byte)
         assert result2.get("game_over") is True
         assert "Breach" in (result2.get("game_over_reason") or "")
 
-        # 11. execute_turn — byte mutations appliquées
+        # 11. execute_turn — byte action queued for next turn
         byte_state = copy.deepcopy(fake_state)
-        byte_recs = {"ciso": {"mutations": []}, "sre": {"mutations": []},
-                     "hacker": {"mutations": [{"node_id": "n2", "attribute": "compromised", "value": True}]}}
-        result3 = execute_turn(byte_state, "C6", byte_recs)
-        n2_after = next(n for n in result3["nodes"] if n["id"] == "n2")
-        assert n2_after["compromised"] is True
+        byte_rec = {"action_id": "B1", "target": "n2"}
+        result3 = execute_turn(byte_state, "C6", None, byte_rec)
+        # Byte action is queued as _pending_byte_action, not applied this turn
+        assert result3.get("_pending_byte_action") is not None
 
         # 12. execute_turn — offline_turns décrémente
         ot_state = copy.deepcopy(fake_state)
-        result4 = execute_turn(ot_state, "C6", empty_recs)
+        result4 = execute_turn(ot_state, "C6", None, empty_byte)
         n7 = next(n for n in result4["nodes"] if n["id"] == "n7")
         assert n7["offline_turns"] == 0
         assert n7["offline"] is False

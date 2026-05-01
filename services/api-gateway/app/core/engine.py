@@ -1,6 +1,8 @@
 # Core game engine — turn resolution, mutation primitives, revenue, win/lose.
 # game_service is the only caller: engine owns all GDD business logic.
 
+from __future__ import annotations
+
 import copy
 import random
 

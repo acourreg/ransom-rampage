@@ -41,14 +41,16 @@ resource "aws_acm_certificate_validation" "cert" {
 # Then update this record with the ALB DNS name and hosted zone ID.
 # Alternatively, use external-dns controller for auto-sync (post-MVP).
 
-resource "aws_route53_record" "main" {
-  zone_id = data.aws_route53_zone.main.zone_id
-  name    = "ransomrampage.com"
-  type    = "A"
-
-  alias {
-    name                   = "REPLACE_WITH_ALB_DNS_NAME"
-    zone_id                = "REPLACE_WITH_ALB_HOSTED_ZONE_ID"
-    evaluate_target_health = true
-  }
-}
+# resource "aws_route53_record" "main" {
+#   zone_id = data.aws_route53_zone.main.zone_id
+#   name    = "ransomrampage.com"
+#   type    = "A"
+#
+#   alias {
+#     name                   = "REPLACE_WITH_ALB_DNS_NAME"
+#     zone_id                = "REPLACE_WITH_ALB_HOSTED_ZONE_ID"
+#     evaluate_target_health = true
+#   }
+# }
+# TODO: uncomment after ALB is created by the Ingress Controller.
+# Get ALB DNS: kubectl get ingress -n ransom-rampage

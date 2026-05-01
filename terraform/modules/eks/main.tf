@@ -106,6 +106,10 @@ data "tls_certificate" "eks" {
   url = aws_eks_cluster.ransom_rampage_cluster.identity[0].oidc[0].issuer
 }
 
+locals {
+  oidc_issuer = replace(aws_eks_cluster.ransom_rampage_cluster.identity[0].oidc[0].issuer, "https://", "")
+}
+
 # Register EKS as trusted identity provider in AWS IAM
 resource "aws_iam_openid_connect_provider" "eks" {
   url             = aws_eks_cluster.ransom_rampage_cluster.identity[0].oidc[0].issuer
@@ -128,8 +132,7 @@ resource "aws_iam_role" "eso_role" {
       Action    = "sts:AssumeRoleWithWebIdentity"
       Condition = {
         StringEquals = {
-          "${replace(aws_iam_openid_connect_provider.eks.url, "https://", "")}:sub" =
-            "system:serviceaccount:external-secrets:external-secrets"
+          "${local.oidc_issuer}:sub" = "system:serviceaccount:external-secrets:external-secrets"
         }
       }
     }]
@@ -162,8 +165,7 @@ resource "aws_iam_role" "alb_controller" {
       Principal = { Federated = aws_iam_openid_connect_provider.eks.arn }
       Condition = {
         StringEquals = {
-          "${replace(aws_iam_openid_connect_provider.eks.url, "https://", "")}:sub" =
-            "system:serviceaccount:kube-system:aws-load-balancer-controller"
+          "${local.oidc_issuer}:sub" = "system:serviceaccount:kube-system:aws-load-balancer-controller"
         }
       }
     }]
