@@ -1,20 +1,40 @@
-from app.storage.vector_store import vectorstore, similarity_search
-# Merged from app/agents/configs.py, cache.py, factory.py, graphs.py
-# Core business logic only: no FastAPI/Redis imports
-
 from typing import Optional, List, Union, Literal, Annotated, TypedDict
 import copy
 import json
+import os
 import time
 
-from pydantic import BaseModel, Field
 from langchain_core.messages import AIMessage
 from langchain_openai import ChatOpenAI
 from langgraph.graph import StateGraph, END
 from langgraph.graph.message import add_messages
+from prometheus_client import Histogram, Counter
+from pydantic import BaseModel, Field
 
-import os
 from app.config import settings
+from app.storage.vector_store import vectorstore, similarity_search
+# Merged from app/agents/configs.py, cache.py, factory.py, graphs.py
+# Core business logic only: no FastAPI/Redis imports
+
+# Custom Prometheus metrics
+LLM_CALL_DURATION = Histogram(
+    'llm_call_duration_seconds',
+    'Duration of LLM API calls',
+    ['agent_role'],
+    buckets=[0.5, 1, 2, 5, 10, 20, 30, 60]
+)
+
+CACHE_HITS = Counter(
+    'semantic_cache_hits_total',
+    'Number of semantic cache hits',
+    ['agent_role']
+)
+
+CACHE_MISSES = Counter(
+    'semantic_cache_misses_total',
+    'Number of semantic cache misses',
+    ['agent_role']
+)
 
 
 _CORPUS_DIR = os.path.join(os.path.dirname(__file__), '..', '..', 'data')
@@ -525,7 +545,9 @@ def make_agent_node(llm, role_name, instructions, tools, allowed_actions):
         t_llm    = time.time()
         print(f"[LLM:{role}] invoking...")
         response = llm.invoke(messages)
-        print(f"[LLM:{role}] done — {time.time() - t_llm:.2f}s")
+        duration = time.time() - t_llm
+        LLM_CALL_DURATION.labels(agent_role=role).observe(duration)
+        print(f"[LLM:{role}] done — {duration:.2f}s")
         return {"messages": [response]}
     return call_agent
 
@@ -565,12 +587,14 @@ def gateway_cache_node(state: AgentState):
 
     if score > 0.9999:
         print(f"🎯 Cache Hit for {role}")
+        CACHE_HITS.labels(agent_role=role).inc()
         return {
             "messages": [AIMessage(content=res[0][0].metadata["response"])],
             "cache_hit": True
         }
 
     print(f"💨 Cache Miss for {role}")
+    CACHE_MISSES.labels(agent_role=role).inc()
     return {"cache_hit": False, "current_cache_key": key}
 
 

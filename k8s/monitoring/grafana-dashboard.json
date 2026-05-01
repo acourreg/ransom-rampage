@@ -1,0 +1,45 @@
+{
+  "dashboard": {
+    "title": "Ransom Rampage",
+    "uid": "ransom-rampage",
+    "panels": [
+      {
+        "title": "Games Created / min",
+        "type": "stat",
+        "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+        "targets": [{"expr": "rate(http_requests_total{handler=\"/api/games\",method=\"POST\"}[5m]) * 60"}]
+      },
+      {
+        "title": "Turn Latency p95 (seconds)",
+        "type": "gauge",
+        "gridPos": {"h": 4, "w": 6, "x": 6, "y": 0},
+        "targets": [{"expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{handler=~\"/api/games/.*/turn\"}[5m]))"}]
+      },
+      {
+        "title": "LLM Call Duration by Agent",
+        "type": "timeseries",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 4},
+        "targets": [{"expr": "histogram_quantile(0.95, rate(llm_call_duration_seconds_bucket[5m]))", "legendFormat": "{{agent_role}} p95"}]
+      },
+      {
+        "title": "Semantic Cache Hit Rate",
+        "type": "gauge",
+        "gridPos": {"h": 4, "w": 6, "x": 12, "y": 0},
+        "targets": [{"expr": "sum(rate(semantic_cache_hits_total[5m])) / (sum(rate(semantic_cache_hits_total[5m])) + sum(rate(semantic_cache_misses_total[5m]))) * 100"}],
+        "fieldConfig": {"defaults": {"unit": "percent", "max": 100, "thresholds": {"steps": [{"value": 0, "color": "red"}, {"value": 50, "color": "yellow"}, {"value": 80, "color": "green"}]}}}
+      },
+      {
+        "title": "Pod CPU Usage",
+        "type": "timeseries",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 4},
+        "targets": [{"expr": "rate(container_cpu_usage_seconds_total{namespace=\"ransom-rampage\"}[5m])", "legendFormat": "{{pod}}"}]
+      },
+      {
+        "title": "Pod Memory Usage (MB)",
+        "type": "timeseries",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 12},
+        "targets": [{"expr": "container_memory_usage_bytes{namespace=\"ransom-rampage\"} / 1024 / 1024", "legendFormat": "{{pod}}"}]
+      }
+    ]
+  }
+}

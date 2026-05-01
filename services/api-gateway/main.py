@@ -1,7 +1,9 @@
 import logging
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from prometheus_fastapi_instrumentator import Instrumentator
 
 from app.config import settings
 import bootstrap
@@ -15,6 +17,10 @@ app = FastAPI(
     version="0.1.0",
     description="Cyber-crisis simulation API"
 )
+
+# Prometheus metrics — auto-instruments all endpoints
+# Exposes /metrics for Prometheus to scrape
+Instrumentator().instrument(app).expose(app)
 
 # CORS middleware (allow all origins for dev)
 app.add_middleware(

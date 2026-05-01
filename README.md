@@ -64,7 +64,10 @@ Each node has throughput, defense, visibility, cost, and compliance scores. Reve
 | Backend | FastAPI · Redis · Pydantic |
 | Frontend | React · Vite · nginx |
 | Vector DBs | FAISS (5 domain-specific corpora, BGE-M3 embeddings) |
-| Infra | Docker · AWS (planned) |
+| Infra | AWS EKS · Terraform · Helm |
+| Observability | Prometheus · Grafana · Loki |
+| CI/CD | GitHub Actions · ArgoCD |
+| Auth | AWS Cognito (Google SSO) |
 
 ## Run Locally
 
@@ -87,7 +90,18 @@ Frontend: `http://localhost:5173` · API: `http://localhost:8000/health`
 | Resolution Engine (deterministic) | ✅ Done |
 | FastAPI Backend + Redis | ✅ Done |
 | React Frontend | ✅ Done |
-| AWS Infra & CI/CD | 🔜 Next |
+| AWS Infra & CI/CD | ✅ Done |
+| Observability | ✅ Done |
+
+## CI/CD Pipeline
+```
+git push → GitHub Actions (lint + test + build + push ECR) → ArgoCD auto-sync → EKS
+```
+
+## Observability
+- **Prometheus** scrapes FastAPI `/metrics` (request rate, latency, LLM duration, cache hit rate)
+- **Loki** aggregates logs from all pods via Promtail (label-based indexing, LogQL queries)
+- **Grafana** unified dashboard: metrics (Prometheus) + logs (Loki) side by side — 6 metric panels + log explorer
 
 ## Author
 
