@@ -13,8 +13,17 @@ spec:
       valueFiles:
         - values.yml
       parameters:
+        - name: image.repository
+          value: 810729346256.dkr.ecr.eu-west-1.amazonaws.com/api-gateway
         - name: image.tag
-          value: 095900b0e5f4f700832bb49d233b12bc4e19bdcc
+          # MANAGED_BY_CI
+          value: latest
+        - name: service.port
+          value: "8000"
+        - name: probes.path
+          value: /health
+        - name: probes.port
+          value: "8000"
   destination:
     server: https://kubernetes.default.svc
     namespace: ransom-rampage
@@ -40,12 +49,17 @@ spec:
       valueFiles:
         - values.yml
       parameters:
+        - name: image.repository
+          value: 810729346256.dkr.ecr.eu-west-1.amazonaws.com/dashboard
         - name: image.tag
-          value: 095900b0e5f4f700832bb49d233b12bc4e19bdcc
+          # MANAGED_BY_CI
+          value: latest
         - name: service.port
-          value: 095900b0e5f4f700832bb49d233b12bc4e19bdcc
-        - name: containerPort
-          value: 095900b0e5f4f700832bb49d233b12bc4e19bdcc
+          value: "80"
+        - name: probes.path
+          value: /
+        - name: probes.port
+          value: "80"
   destination:
     server: https://kubernetes.default.svc
     namespace: ransom-rampage
