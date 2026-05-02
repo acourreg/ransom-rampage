@@ -13,11 +13,11 @@ metadata:
     alb.ingress.kubernetes.io/auth-on-unauthenticated-request: authenticate
     alb.ingress.kubernetes.io/auth-idp-cognito: >
       {
-        "userPoolARN": "PLACEHOLDER_USER_POOL_ARN",
-        "userPoolClientID": "PLACEHOLDER_CLIENT_ID",
+        "userPoolARN": "arn:aws:cognito-idp:eu-west-1:810729346256:userpool/eu-west-1_Ixvrmycm5",
+        "userPoolClientID": "5qul51encnd97drushbajk4csr",
         "userPoolDomain": "ransomrampage"
       }
-    alb.ingress.kubernetes.io/certificate-arn: "PLACEHOLDER_ACM_ARN"
+    alb.ingress.kubernetes.io/certificate-arn: "arn:aws:acm:eu-west-1:810729346256:certificate/758f6356-747d-447e-8cf6-04da6e0bec11"
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
 spec:
   rules:

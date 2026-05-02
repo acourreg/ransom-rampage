@@ -54,6 +54,16 @@ resource "helm_release" "aws_lb_controller" {
     value = module.eks.alb_controller_role_arn
   }
 
+  set {
+    name  = "vpcId"
+    value = module.networking.vpc_id
+  }
+
+  set {
+    name  = "region"
+    value = var.aws_region
+  }
+
   depends_on = [module.eks, aws_acm_certificate_validation.cert]
 }
 
