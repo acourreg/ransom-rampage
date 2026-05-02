@@ -14,7 +14,7 @@ spec:
         - values.yml
       parameters:
         - name: image.tag
-          value: latest
+          value: 095900b0e5f4f700832bb49d233b12bc4e19bdcc
   destination:
     server: https://kubernetes.default.svc
     namespace: ransom-rampage
@@ -41,11 +41,11 @@ spec:
         - values.yml
       parameters:
         - name: image.tag
-          value: latest
+          value: 095900b0e5f4f700832bb49d233b12bc4e19bdcc
         - name: service.port
-          value: "80"
+          value: 095900b0e5f4f700832bb49d233b12bc4e19bdcc
         - name: containerPort
-          value: "3000"
+          value: 095900b0e5f4f700832bb49d233b12bc4e19bdcc
   destination:
     server: https://kubernetes.default.svc
     namespace: ransom-rampage
