@@ -63,7 +63,7 @@ Each node has throughput, defense, visibility, cost, and compliance scores. Reve
 | AI Agents | LangGraph · LangChain · OpenAI API · FAISS |
 | Backend | FastAPI · Redis · Pydantic |
 | Frontend | React · Vite · nginx |
-| Vector DBs | FAISS (5 domain-specific corpora, BGE-M3 embeddings) |
+| Vector DBs | FAISS (5 domain-specific corpora, BGE-small embeddings) |
 | Infra | AWS EKS · Terraform · Helm |
 | Observability | Prometheus · Grafana · Loki |
 | CI/CD | GitHub Actions · ArgoCD |

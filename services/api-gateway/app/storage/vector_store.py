@@ -5,7 +5,7 @@ from langchain_core.tools import tool
 
 DB_PATH = os.path.join(os.path.dirname(__file__), "../../data/unified_vector_db")
 
-_embeddings = HuggingFaceEmbeddings(model_name="BAAI/bge-m3")
+_embeddings = HuggingFaceEmbeddings(model_name="BAAI/bge-small-en-v1.5")
 
 if os.path.isfile(os.path.join(DB_PATH, "index.faiss")):
     vectorstore = FAISS.load_local(DB_PATH, _embeddings, allow_dangerous_deserialization=True)
