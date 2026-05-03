@@ -1,7 +1,7 @@
 # AFTER terraform apply, replace PLACEHOLDERs with:
 #   arn:aws:acm:eu-west-1:810729346256:certificate/758f6356-747d-447e-8cf6-04da6e0bec11       → terraform output -raw acm_certificate_arn
 #   arn:aws:cognito-idp:eu-west-1:810729346256:userpool/eu-west-1_Ixvrmycm5 → terraform output -raw cognito_user_pool_arn
-#   5qul51encnd97drushbajk4csr     → terraform output -raw cognito_user_pool_client_id
+#   2h873rm9o50b0fh1cu40nqe1es     → terraform output -raw cognito_user_pool_client_id
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -17,7 +17,7 @@ metadata:
     alb.ingress.kubernetes.io/auth-idp-cognito: >
       {
         "userPoolARN": "arn:aws:cognito-idp:eu-west-1:810729346256:userpool/eu-west-1_Ixvrmycm5",
-        "userPoolClientID": "5qul51encnd97drushbajk4csr",
+        "userPoolClientID": "2h873rm9o50b0fh1cu40nqe1es",
         "userPoolDomain": "ransomrampage"
       }
     alb.ingress.kubernetes.io/certificate-arn: "arn:aws:acm:eu-west-1:810729346256:certificate/758f6356-747d-447e-8cf6-04da6e0bec11"
