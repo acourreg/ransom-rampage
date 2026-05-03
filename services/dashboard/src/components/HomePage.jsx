@@ -73,6 +73,31 @@ export default function HomePage() {
           {isLocal ? 'Running locally — auth bypassed' : 'Sign in with Google to start a simulation'}
         </p>
       </div>
+
+      <footer style={{
+        position: 'absolute',
+        bottom: 20,
+        left: 0,
+        right: 0,
+        textAlign: 'center',
+        padding: '0 24px',
+      }}>
+        <p style={{
+          fontSize: 10,
+          color: '#475569',
+          lineHeight: 1.6,
+          maxWidth: 520,
+          margin: '0 auto',
+        }}>
+          ⚠️ This is a fictional simulation for demonstration purposes only.
+          No real companies, infrastructure, or financial data are represented.
+          No personal data is stored beyond your Google login session.
+          Provided "as is" with no warranty — the author reserves the right
+          to modify or discontinue this service at any time.
+          <br />
+          <span style={{ color: '#64748B' }}>© 2026 Aurélien Courreges-Clercq</span>
+        </p>
+      </footer>
     </div>
   )
 }
