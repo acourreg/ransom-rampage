@@ -1,5 +1,3 @@
-import { useNavigate } from 'react-router-dom';
-
 export default function HomePage() {
   const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
@@ -15,43 +13,66 @@ export default function HomePage() {
 
   return (
     <div style={{
-      minHeight: '100vh',
-      background: '#F8FAFC',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      fontFamily: "'Inter', sans-serif",
-      padding: '2rem',
+      height: '100vh', background: '#1A2332',
+      display: 'flex', flexDirection: 'column',
+      alignItems: 'center', justifyContent: 'center',
+      fontFamily: 'Inter'
     }}>
-      <h1 style={{ fontSize: '2.5rem', color: '#0F172A', marginBottom: '0.5rem' }}>
-        Ransom Rampage
-      </h1>
-      <p style={{ fontSize: '1.2rem', color: '#64748B', marginBottom: '2rem', textAlign: 'center', maxWidth: '600px' }}>
-        CTO Crisis Simulator — Defend your AI-generated fintech startup
-        from a live ransomware attack. 3 AI advisors. 1 hacker. 15 turns.
-        Can you keep the lights on?
-      </p>
+      <div style={{ textAlign: 'center', maxWidth: 480 }}>
+        <img
+          src="/assets/avatars/ransom-rampage.png"
+          width={360}
+          style={{
+            marginBottom: 24, objectFit: 'contain',
+            borderRadius: 12,
+            boxShadow: '0 0 40px rgba(37,99,235,0.25), 0 8px 32px rgba(0,0,0,0.5)',
+          }}
+          onError={e => e.target.style.display = 'none'}
+        />
+        <div style={{ fontSize: 11, fontWeight: 600, color: '#60A5FA', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 16 }}>
+          CTO Crisis Simulator
+        </div>
+        <p style={{ color: '#94A3B8', fontSize: 15, marginBottom: 40, lineHeight: 1.6 }}>
+          Can you keep the lights on?<br />
+          A hacker is coming. Your board is watching.
+        </p>
 
-      <button
-        onClick={handlePlay}
-        style={{
-          padding: '1rem 2.5rem',
-          fontSize: '1.1rem',
-          fontWeight: 600,
-          color: '#FFFFFF',
-          backgroundColor: '#2563EB',
-          border: 'none',
-          borderRadius: '8px',
-          cursor: 'pointer',
-        }}
-      >
-        {isLocal ? 'Play Now (local mode)' : 'Login to Play'}
-      </button>
+        <div style={{ display: 'flex', gap: 8, marginBottom: 28, justifyContent: 'center' }}>
+          {[
+            { icon: '⚡', label: 'AI generates your company' },
+            { icon: '🛡', label: 'Defend against a live hacker' },
+            { icon: '🏆', label: 'Survive the simulation' },
+          ].map(({ icon, label }) => (
+            <div key={label} style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              background: 'rgba(255,255,255,0.08)',
+              border: '1px solid rgba(255,255,255,0.12)',
+              borderRadius: 20,
+              padding: '6px 14px',
+              fontFamily: 'Inter', fontSize: 12, color: '#CBD5E1',
+            }}>
+              <span>{icon}</span>
+              <span>{label}</span>
+            </div>
+          ))}
+        </div>
 
-      <p style={{ marginTop: '1rem', fontSize: '0.85rem', color: '#94A3B8' }}>
-        {isLocal ? 'Running locally — auth bypassed' : 'Sign in with Google to start a simulation'}
-      </p>
+        <button
+          onClick={handlePlay}
+          style={{
+            width: '100%', padding: '12px 24px', borderRadius: 8, border: 'none',
+            background: '#2563EB',
+            color: '#FFFFFF', fontFamily: 'Inter', fontWeight: 700,
+            fontSize: 14, cursor: 'pointer',
+          }}
+        >
+          {isLocal ? '⚡ Play Now (local mode)' : '🔐 Login to Play'}
+        </button>
+
+        <p style={{ fontSize: 11, color: '#64748B', marginTop: 12, textAlign: 'center' }}>
+          {isLocal ? 'Running locally — auth bypassed' : 'Sign in with Google to start a simulation'}
+        </p>
+      </div>
     </div>
-  );
+  )
 }
