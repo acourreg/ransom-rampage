@@ -19,7 +19,8 @@ spec:
     spec:
       containers:
         - name: app
-          image: {{ .Values.image.repository | default "my-app" }}
+          image: {{ .Values.image.repository | default "my-app" }}:{{ .Values.image.tag | default "latest" }}
+          imagePullPolicy: {{ .Values.image.pullPolicy | default "Always" }}
           ports:
             - containerPort: {{ .Values.service.port | default 80 }}
           
