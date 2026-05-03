@@ -19,7 +19,8 @@ module "ecr" {
 
 module "data" {
   source             = "./modules/data"
-  private_subnet_ids = module.networking.private_subnet_ids  # ← output networking → input eks
+  private_subnet_ids = module.networking.private_subnet_ids
+  vpc_id             = module.networking.vpc_id
 }
 
 module "config" {
