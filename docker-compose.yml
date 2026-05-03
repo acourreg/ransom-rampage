@@ -2,7 +2,7 @@ services:
   dashboard:
     build: ./services/dashboard
     ports:
-      - "3000:3000"
+      - "3000:80"
     depends_on:
       - api-gateway
 
