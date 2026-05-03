@@ -13,7 +13,7 @@ export default function HomePage() {
 
   return (
     <div style={{
-      height: '100vh', background: '#1A2332',
+      minHeight: '100vh', background: '#1A2332',
       display: 'flex', flexDirection: 'column',
       alignItems: 'center', justifyContent: 'center',
       fontFamily: 'Inter'
@@ -75,12 +75,10 @@ export default function HomePage() {
       </div>
 
       <footer style={{
-        position: 'absolute',
-        bottom: 20,
-        left: 0,
-        right: 0,
+        marginTop: 40,
         textAlign: 'center',
-        padding: '0 24px',
+        padding: '16px 24px',
+        borderTop: '1px solid rgba(255,255,255,0.08)',
       }}>
         <p style={{
           fontSize: 10,
