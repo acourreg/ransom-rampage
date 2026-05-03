@@ -35,7 +35,7 @@ spec:
               port: {{ .Values.service.port }}
             initialDelaySeconds: {{ .Values.probes.initialDelaySeconds | default 10 }}
             periodSeconds: 10
-            failureThreshold: 6
+            failureThreshold: 12
           readinessProbe:
             httpGet:
               path: {{ .Values.probes.path }}

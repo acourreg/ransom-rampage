@@ -25,7 +25,7 @@ spec:
         - name: probes.port
           value: "8000"
         - name: probes.initialDelaySeconds
-          value: "60"
+          value: "120"
         - name: replicaCount
           value: "1"
         - name: resources.requests.memory
