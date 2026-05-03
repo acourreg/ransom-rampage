@@ -17,7 +17,7 @@ resource "aws_cognito_user_pool_client" "main" {
 
   generate_secret                      = true
   allowed_oauth_flows                  = ["code"]
-  allowed_oauth_scopes                 = ["openid", "email", "profile"]
+  allowed_oauth_scopes                 = ["openid", "email"]
   supported_identity_providers         = ["Google"]
   allowed_oauth_flows_user_pool_client = true
 }
@@ -35,7 +35,7 @@ resource "aws_cognito_identity_provider" "google" {
   provider_details = {
     client_id        = var.google_client_id
     client_secret    = var.google_client_secret
-    authorize_scopes = "openid email profile"
+    authorize_scopes = "openid email"
   }
 
   attribute_mapping = {
