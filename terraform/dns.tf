@@ -35,22 +35,26 @@ resource "aws_acm_certificate_validation" "cert" {
   validation_record_fqdns = [for r in aws_route53_record.cert_validation : r.fqdn]
 }
 
-# NOTE: ALB is created by the AWS Load Balancer Controller when Ingress is applied.
-# After kubectl apply, get ALB DNS:
-#   kubectl get ingress -n ransom-rampage
-# Then update this record with the ALB DNS name and hosted zone ID.
-# Alternatively, use external-dns controller for auto-sync (post-MVP).
+resource "aws_route53_record" "main" {
+  zone_id = data.aws_route53_zone.main.zone_id
+  name    = "ransomrampage.com"
+  type    = "A"
 
-# resource "aws_route53_record" "main" {
-#   zone_id = data.aws_route53_zone.main.zone_id
-#   name    = "ransomrampage.com"
-#   type    = "A"
-#
-#   alias {
-#     name                   = "REPLACE_WITH_ALB_DNS_NAME"
-#     zone_id                = "REPLACE_WITH_ALB_HOSTED_ZONE_ID"
-#     evaluate_target_health = true
-#   }
-# }
-# TODO: uncomment after ALB is created by the Ingress Controller.
-# Get ALB DNS: kubectl get ingress -n ransom-rampage
+  alias {
+    name                   = "k8s-ransomrampage-f3c7cf0d97-633248243.eu-west-1.elb.amazonaws.com"
+    zone_id                = "Z32O12XQLNTSW2"
+    evaluate_target_health = true
+  }
+}
+
+resource "aws_route53_record" "wildcard" {
+  zone_id = data.aws_route53_zone.main.zone_id
+  name    = "*.ransomrampage.com"
+  type    = "A"
+
+  alias {
+    name                   = "k8s-ransomrampage-f3c7cf0d97-633248243.eu-west-1.elb.amazonaws.com"
+    zone_id                = "Z32O12XQLNTSW2"
+    evaluate_target_health = true
+  }
+}

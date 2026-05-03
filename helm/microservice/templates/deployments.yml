@@ -33,10 +33,15 @@ spec:
             httpGet:
               path: {{ .Values.probes.path }}
               port: {{ .Values.service.port }}
+            initialDelaySeconds: {{ .Values.probes.initialDelaySeconds | default 10 }}
+            periodSeconds: 10
+            failureThreshold: 6
           readinessProbe:
             httpGet:
               path: {{ .Values.probes.path }}
               port: {{ .Values.service.port }}
+            initialDelaySeconds: {{ .Values.probes.initialDelaySeconds | default 10 }}
+            periodSeconds: 5
 
           env:
             - name: OPENAI_API_KEY

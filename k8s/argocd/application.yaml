@@ -24,6 +24,18 @@ spec:
           value: /health
         - name: probes.port
           value: "8000"
+        - name: probes.initialDelaySeconds
+          value: "60"
+        - name: replicaCount
+          value: "1"
+        - name: resources.requests.memory
+          value: 2Gi
+        - name: resources.limits.memory
+          value: 3Gi
+        - name: resources.requests.cpu
+          value: 500m
+        - name: resources.limits.cpu
+          value: "1"
   destination:
     server: https://kubernetes.default.svc
     namespace: ransom-rampage
