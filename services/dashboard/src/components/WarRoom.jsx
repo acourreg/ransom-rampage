@@ -2,11 +2,11 @@ import { useEffect, useRef } from 'react'
 import { formatTurnTimestamp } from '../utils/formatters.js'
 
 const AVATARS = {
-  ciso:      { img: '/assets/avatars/ciso.png',   name: '@CISO',             color: '#2563EB' },
-  sre:       { img: '/assets/avatars/sre.png',    name: '@SRE-Team',         color: '#10B981' },
-  byte:      { img: '/assets/avatars/hacker.png', name: null, color: '#EF4444' },
-  hacker:    { img: '/assets/avatars/hacker.png', name: null, color: '#EF4444' },
-  regulator: { img: '/assets/avatars/legal.png',  name: '@Legal-Compliance', color: '#F59E0B' },
+  ciso:      { img: '/assets/avatars/ciso.jpeg',   name: '@CISO',             color: '#2563EB' },
+  sre:       { img: '/assets/avatars/sre.jpeg',    name: '@SRE-Team',         color: '#10B981' },
+  byte:      { img: '/assets/avatars/hacker.jpeg', name: null, color: '#EF4444' },
+  hacker:    { img: '/assets/avatars/hacker.jpeg', name: null, color: '#EF4444' },
+  regulator: { img: '/assets/avatars/legal.jpeg',  name: '@Legal-Compliance', color: '#F59E0B' },
   cto:       { img: null, emoji: '👔',             name: '@CTO (You)',        color: '#0F172A' },
   system:    { img: null, emoji: '⚙️',             name: 'System',            color: '#94A3B8' },
 }

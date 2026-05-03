@@ -20,7 +20,7 @@ export default function HomePage() {
     }}>
       <div style={{ textAlign: 'center', maxWidth: 480 }}>
         <img
-          src="/assets/avatars/ransom-rampage.png"
+          src="/assets/avatars/ransom-rampage.jpeg"
           width={360}
           style={{
             marginBottom: 24, objectFit: 'contain',

@@ -151,7 +151,7 @@ export default function StrategyPanel({
                 <div key={role} style={{ ...advisorCard, borderLeft: `20px solid ${accentColor}`, padding: '14px 14px 14px 16px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
                     <img
-                      src={role === 'ciso' ? '/assets/avatars/ciso.png' : '/assets/avatars/sre.png'}
+                      src={role === 'ciso' ? '/assets/avatars/ciso.jpeg' : '/assets/avatars/sre.jpeg'}
                       width={48} height={48}
                       style={{ borderRadius: '50%', border: `2px solid ${accentColor}`, objectFit: 'cover', flexShrink: 0 }}
                       onError={e => { e.target.style.display = 'none' }}
@@ -200,7 +200,7 @@ export default function StrategyPanel({
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
                     <img
-                      src={role === 'ciso' ? '/assets/avatars/ciso.png' : '/assets/avatars/sre.png'}
+                      src={role === 'ciso' ? '/assets/avatars/ciso.jpeg' : '/assets/avatars/sre.jpeg'}
                       width={48} height={48}
                       style={{ borderRadius: '50%', border: `2px solid ${accentColor}`, objectFit: 'cover', flexShrink: 0 }}
                       onError={e => { e.target.style.display = 'none' }}
