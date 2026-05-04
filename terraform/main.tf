@@ -8,7 +8,8 @@ module "networking" {
 module "eks" {
   source             = "./modules/eks"
   cluster_name       = var.cluster_name
-  private_subnet_ids = module.networking.private_subnet_ids  # ← output networking → input eks
+  aws_account_id     = var.aws_account_id
+  private_subnet_ids = module.networking.private_subnet_ids
   vpc_id             = module.networking.vpc_id
 }
 
@@ -17,15 +18,16 @@ module "ecr" {
   services           = var.services
 }
 
-module "data" {
-  source             = "./modules/data"
-  private_subnet_ids = module.networking.private_subnet_ids
-  vpc_id             = module.networking.vpc_id
-}
+# module "data" — ElastiCache disabled (saves $13/mo, game runs without Redis persistence)
+# Re-enable: uncomment and run terraform apply
+# module "data" {
+#   source             = "./modules/data"
+#   private_subnet_ids = module.networking.private_subnet_ids
+#   vpc_id             = module.networking.vpc_id
+# }
 
 module "config" {
-  source             = "./modules/config"
-  redis_endpoint     = module.data.redis_endpoint
+  source = "./modules/config"
 }
 
 module "cognito" {

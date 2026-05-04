@@ -28,6 +28,11 @@ variable "availability_zones" {
   default = ["eu-west-1a", "eu-west-1b"]
 }
 
+variable "aws_account_id" {
+  description = "AWS Account ID"
+  type        = string
+}
+
 variable "services" {
   type = map(map(string))
   default = {

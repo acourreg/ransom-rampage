@@ -1,3 +1,5 @@
+# PLACEHOLDERs for ECR URLs are replaced by scripts/deploy.sh
+# image.tag lines marked MANAGED_BY_CI are updated by CI pipeline
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -14,7 +16,7 @@ spec:
         - values.yml
       parameters:
         - name: image.repository
-          value: 810729346256.dkr.ecr.eu-west-1.amazonaws.com/api-gateway
+          value: "__ECR_API_GATEWAY_URL__"
         - name: image.tag
           # MANAGED_BY_CI
           value: 7aa4632d1f045fe1fbb58fd0750a354f2d222aad
@@ -62,7 +64,7 @@ spec:
         - values.yml
       parameters:
         - name: image.repository
-          value: 810729346256.dkr.ecr.eu-west-1.amazonaws.com/dashboard
+          value: "__ECR_DASHBOARD_URL__"
         - name: image.tag
           # MANAGED_BY_CI
           value: 7aa4632d1f045fe1fbb58fd0750a354f2d222aad

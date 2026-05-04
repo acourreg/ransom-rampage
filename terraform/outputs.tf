@@ -17,9 +17,13 @@ output "repo_urls" {
   value = module.ecr.repo_urls
 }
 
-# ── Data ────────────────────────────────────────────────────
-output "redis_endpoint" {
-  value = module.data.redis_endpoint
+# ── ECR (individual) ────────────────────────────────────────
+output "ecr_api_gateway_url" {
+  value = module.ecr.repo_urls["api-gateway"]
+}
+
+output "ecr_dashboard_url" {
+  value = module.ecr.repo_urls["dashboard"]
 }
 
 # ── DNS / TLS ──────────────────────────────────────────────

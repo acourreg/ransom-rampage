@@ -21,13 +21,13 @@ resource "aws_eks_cluster" "ransom_rampage_cluster" {
 
 resource "aws_eks_access_entry" "admin" {
   cluster_name  = aws_eks_cluster.ransom_rampage_cluster.name
-  principal_arn = "arn:aws:iam::810729346256:user/terraform"
+  principal_arn = "arn:aws:iam::${var.aws_account_id}:user/terraform"
   type          = "STANDARD"
 }
 
 resource "aws_eks_access_policy_association" "admin" {
   cluster_name  = aws_eks_cluster.ransom_rampage_cluster.name
-  principal_arn = "arn:aws:iam::810729346256:user/terraform"
+  principal_arn = "arn:aws:iam::${var.aws_account_id}:user/terraform"
   policy_arn    = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
 
   access_scope {
@@ -69,11 +69,11 @@ resource "aws_eks_node_group" "ransom_rampage_node_1" {
   node_role_arn   = aws_iam_role.eks_node_role.arn
   subnet_ids      = var.private_subnet_ids
   instance_types = [ "t3.medium" ]
-  disk_size      = 40
+  disk_size      = 20
 
   scaling_config {
-    desired_size = 2
-    max_size     = 3
+    desired_size = 1
+    max_size     = 2
     min_size     = 1
   }
 

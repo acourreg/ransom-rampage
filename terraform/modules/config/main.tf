@@ -13,7 +13,9 @@ data "aws_ssm_parameter" "google_client_secret" {
   with_decryption = true
 }
 
+# Redis SSM param — only created when ElastiCache is enabled
 resource "aws_ssm_parameter" "redis_url" {
+  count = var.redis_endpoint != "" ? 1 : 0
   name  = "/ransom-rampage/redis-url"
   type  = "String"
   value = "redis://${var.redis_endpoint}:6379"

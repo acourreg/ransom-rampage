@@ -1,3 +1,4 @@
 variable "redis_endpoint" {
-    type = string
+    type    = string
+    default = ""
 }

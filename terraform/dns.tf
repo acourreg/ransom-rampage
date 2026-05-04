@@ -35,6 +35,8 @@ resource "aws_acm_certificate_validation" "cert" {
   validation_record_fqdns = [for r in aws_route53_record.cert_validation : r.fqdn]
 }
 
+# ALB DNS is dynamic — set by scripts/deploy.sh after Ingress is applied
+# To get ALB DNS: kubectl get ingress -n ransom-rampage -o jsonpath='{.items[0].status.loadBalancer.ingress[0].hostname}'
 resource "aws_route53_record" "main" {
   zone_id = data.aws_route53_zone.main.zone_id
   name    = "ransomrampage.com"
@@ -42,8 +44,12 @@ resource "aws_route53_record" "main" {
 
   alias {
     name                   = "k8s-ransomrampage-f3c7cf0d97-633248243.eu-west-1.elb.amazonaws.com"
-    zone_id                = "Z32O12XQLNTSW2"
+    zone_id                = "Z32O12XQLNTSW2"  # eu-west-1 ALB zone (static per region)
     evaluate_target_health = true
+  }
+
+  lifecycle {
+    ignore_changes = [alias]
   }
 }
 
@@ -56,5 +62,9 @@ resource "aws_route53_record" "wildcard" {
     name                   = "k8s-ransomrampage-f3c7cf0d97-633248243.eu-west-1.elb.amazonaws.com"
     zone_id                = "Z32O12XQLNTSW2"
     evaluate_target_health = true
+  }
+
+  lifecycle {
+    ignore_changes = [alias]
   }
 }

@@ -34,14 +34,7 @@ push: build
 	docker push $(ECR_BASE)/dashboard:$(TAG)
 
 # ── Kubernetes ──────────────────────────────────────────────
-.PHONY: deploy password smoke
-
-deploy:
-	aws eks update-kubeconfig --name $(CLUSTER_NAME) --region $(AWS_REGION)
-	kubectl apply -f k8s/
-
-password:
-	aws eks update-kubeconfig --name $(CLUSTER_NAME) --region $(AWS_REGION)
+.PHONY: smoke
 
 smoke:
 	@echo "--- cluster nodes ---"
@@ -51,16 +44,40 @@ smoke:
 	@echo "--- services ---"
 	kubectl get svc -n ransom-rampage
 
-# ── Admin Dashboards (port-forward) ───────────────────────
-.PHONY: grafana argocd-local argocd-password
+# ── Scripts ─────────────────────────────────────────────────
+.PHONY: setup deploy port-forward status teardown
+
+setup:
+	@bash scripts/setup.sh
+
+deploy:
+	@bash scripts/deploy.sh
+
+port-forward:
+	@bash scripts/port-forward.sh
+
+status:
+	@bash scripts/status.sh
+
+teardown:
+	@bash scripts/teardown.sh
+
+# ── Admin Dashboards ────────────────────────────────────────
+.PHONY: grafana argocd-local argocd-password dns-update
 
 grafana:
-	@echo "→ Grafana: http://localhost:3001  (admin / prom-operator)"
-	kubectl port-forward svc/kube-prometheus-stack-grafana -n monitoring 3001:80
+	@echo "→ Grafana: http://localhost:13001  (admin / prom-operator)"
+	kubectl port-forward svc/kube-prometheus-stack-grafana -n monitoring 13001:80
 
 argocd-local:
-	@echo "→ ArgoCD: http://localhost:8080  (admin / <see argocd-password>)"
-	kubectl port-forward svc/argocd-server -n argocd 8080:443
+	@echo "→ ArgoCD: http://localhost:13002  (admin / <see argocd-password>)"
+	kubectl port-forward pod/argocd-proxy -n argocd 13002:8888
 
 argocd-password:
 	@kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d && echo
+
+dns-update:
+	@echo "Getting ALB DNS..."
+	@ALB=$$(kubectl get ingress -n ransom-rampage -o jsonpath='{.items[0].status.loadBalancer.ingress[0].hostname}') && \
+	echo "ALB DNS: $$ALB" && \
+	echo "Update Route53 manually or run external-dns"
