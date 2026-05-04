@@ -17,7 +17,7 @@ spec:
           value: 810729346256.dkr.ecr.eu-west-1.amazonaws.com/api-gateway
         - name: image.tag
           # MANAGED_BY_CI
-          value: 8b4bd6927ee2bbd33269078316c422baaf8b89a6
+          value: 3d7c5b910cd5a251b163c70ac2e7c4069c483640
         - name: service.port
           value: "8000"
         - name: probes.path
@@ -65,7 +65,7 @@ spec:
           value: 810729346256.dkr.ecr.eu-west-1.amazonaws.com/dashboard
         - name: image.tag
           # MANAGED_BY_CI
-          value: 8b4bd6927ee2bbd33269078316c422baaf8b89a6
+          value: 3d7c5b910cd5a251b163c70ac2e7c4069c483640
         - name: service.port
           value: "80"
         - name: probes.path
