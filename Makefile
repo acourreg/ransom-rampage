@@ -50,3 +50,17 @@ smoke:
 	kubectl get pods -n ransom-rampage
 	@echo "--- services ---"
 	kubectl get svc -n ransom-rampage
+
+# ── Admin Dashboards (port-forward) ───────────────────────
+.PHONY: grafana argocd-local argocd-password
+
+grafana:
+	@echo "→ Grafana: http://localhost:3001  (admin / prom-operator)"
+	kubectl port-forward svc/kube-prometheus-stack-grafana -n monitoring 3001:80
+
+argocd-local:
+	@echo "→ ArgoCD: http://localhost:8080  (admin / <see argocd-password>)"
+	kubectl port-forward svc/argocd-server -n argocd 8080:443
+
+argocd-password:
+	@kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d && echo
