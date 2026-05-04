@@ -96,3 +96,60 @@ resource "aws_route_table_association" "private_2" {
   subnet_id      = aws_subnet.private_2.id
   route_table_id = aws_route_table.private.id
 }
+
+# ── VPC Endpoints (bypass NAT for AWS services) ────────────
+
+# Gateway endpoint (free)
+resource "aws_vpc_endpoint" "s3" {
+  vpc_id            = aws_vpc.ransom_rampage_vpc.id
+  service_name      = "com.amazonaws.eu-west-1.s3"
+  vpc_endpoint_type = "Gateway"
+  route_table_ids   = [aws_route_table.private.id]
+  tags              = { Name = "ransom-rampage-s3-endpoint" }
+}
+
+# Security group for Interface endpoints
+resource "aws_security_group" "vpc_endpoints" {
+  name_prefix = "vpc-endpoints-"
+  vpc_id      = aws_vpc.ransom_rampage_vpc.id
+
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["10.0.0.0/16"]
+  }
+
+  tags = { Name = "ransom-rampage-vpc-endpoints-sg" }
+}
+
+# Interface endpoints (~$7/mo each, but saves $0.045/GB NAT data transfer)
+resource "aws_vpc_endpoint" "ecr_api" {
+  vpc_id              = aws_vpc.ransom_rampage_vpc.id
+  service_name        = "com.amazonaws.eu-west-1.ecr.api"
+  vpc_endpoint_type   = "Interface"
+  subnet_ids          = [aws_subnet.private_1.id, aws_subnet.private_2.id]
+  security_group_ids  = [aws_security_group.vpc_endpoints.id]
+  private_dns_enabled = true
+  tags                = { Name = "ransom-rampage-ecr-api-endpoint" }
+}
+
+resource "aws_vpc_endpoint" "ecr_dkr" {
+  vpc_id              = aws_vpc.ransom_rampage_vpc.id
+  service_name        = "com.amazonaws.eu-west-1.ecr.dkr"
+  vpc_endpoint_type   = "Interface"
+  subnet_ids          = [aws_subnet.private_1.id, aws_subnet.private_2.id]
+  security_group_ids  = [aws_security_group.vpc_endpoints.id]
+  private_dns_enabled = true
+  tags                = { Name = "ransom-rampage-ecr-dkr-endpoint" }
+}
+
+resource "aws_vpc_endpoint" "sts" {
+  vpc_id              = aws_vpc.ransom_rampage_vpc.id
+  service_name        = "com.amazonaws.eu-west-1.sts"
+  vpc_endpoint_type   = "Interface"
+  subnet_ids          = [aws_subnet.private_1.id, aws_subnet.private_2.id]
+  security_group_ids  = [aws_security_group.vpc_endpoints.id]
+  private_dns_enabled = true
+  tags                = { Name = "ransom-rampage-sts-endpoint" }
+}
