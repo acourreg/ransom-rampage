@@ -11,8 +11,8 @@ spec:
       - ransom-rampage
   selector:
     matchLabels:
-      app: api-gateway
+      argocd.argoproj.io/instance: api-gateway
   endpoints:
-    - port: http
+    - targetPort: 8000
       path: /metrics
       interval: 15s
