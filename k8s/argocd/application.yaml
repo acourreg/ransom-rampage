@@ -19,7 +19,7 @@ spec:
           value: "__ECR_API_GATEWAY_URL__"
         - name: image.tag
           # MANAGED_BY_CI
-          value: c3e8f13976b9de6f7609b9c71f4b0984376ce23f
+          value: 66a18eb445cb60311afc918bef2233f2eb6d3574
         - name: service.port
           value: "8000"
         - name: probes.path
@@ -67,7 +67,7 @@ spec:
           value: "__ECR_DASHBOARD_URL__"
         - name: image.tag
           # MANAGED_BY_CI
-          value: c3e8f13976b9de6f7609b9c71f4b0984376ce23f
+          value: 66a18eb445cb60311afc918bef2233f2eb6d3574
         - name: service.port
           value: "80"
         - name: probes.path
