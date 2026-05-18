@@ -130,12 +130,28 @@ git push → GitHub Actions → ruff lint → pytest → Docker build → push E
 
 ### Cost
 
-| Scenario | Monthly Cost |
-|---|---|
-| **Always-on** (1 node, no ElastiCache) | ~$160/mo |
-| **Demo-only** (spin up for interviews, destroy after) | ~$5–8 per demo day |
-| **Idle** (terraform destroy, keep DNS + state) | $0.50/mo |
-| **LLM cost per full game** (50 requests, 165K tokens) | $0.02 |
+Measured May 4-6 2026. During this deployment, the EKS cluster silently entered extended Kubernetes version support ($0.60/h instead of $0.10/h) — a 6x control plane multiplier caused by the cluster version not being pinned explicitly in the Terraform module call. The fix is one line: passing `cluster_version = "1.31"` to the EKS module.
+
+| Scenario | As deployed (with bug) | Fixed (standard support) |
+|---|---|---|
+| **Always-on** (1× t3.medium) | ~$585/mo (~$19.50/day) | **~$225/mo** (~$7.50/day) |
+| **Demo-only** (spin up, destroy same day) | ~$20/day | **~$8/day** |
+| **Idle** (terraform destroy, keep DNS) | $0.50/mo | $0.50/mo |
+| **LLM cost per full game** | $0.02 | $0.02 |
+
+**Breakdown (fixed, per day):**
+
+| Service | $/day | $/mo |
+|---|---|---|
+| EKS control plane (standard support) | $2.40 | $73 |
+| EC2 Instance (1× t3.medium) | $2.19 | $66 |
+| NAT Gateway + data transfer | $1.42 | $43 |
+| ALB | $0.61 | $18 |
+| VPC endpoints | $0.36 | $11 |
+| Route53 + ECR + S3 | $0.02 | $1 |
+| **Total** | **$7.00** | **$212** |
+
+> **Lesson learned:** EKS extended support pricing activates silently when the Kubernetes version falls out of its 14-month standard window. There is no Terraform warning, no AWS alert. Cost Explorer → filter by Usage Type `ExtendedSupport` is the only way to catch it. Always pin your K8s version and verify post-apply with `aws eks describe-cluster`.
 
 ![AWS Cost Explorer](docs/screenshots/07-aws-costs.png)
 
