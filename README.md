@@ -134,7 +134,7 @@ Measured May 4-6 2026. During this deployment, the EKS cluster silently entered 
 
 | Scenario | As deployed (with bug) | Fixed (standard support) |
 |---|---|---|
-| **Always-on** (1× t3.medium) | ~$585/mo (~$19.50/day) | **~$225/mo** (~$7.50/day) |
+| **Always-on** (1× t3.medium) | ~$585/mo | **~$238/mo** (incl. tax) |
 | **Demo-only** (spin up, destroy same day) | ~$20/day | **~$8/day** |
 | **Idle** (terraform destroy, keep DNS) | $0.50/mo | $0.50/mo |
 | **LLM cost per full game** | $0.02 | $0.02 |
@@ -149,7 +149,9 @@ Measured May 4-6 2026. During this deployment, the EKS cluster silently entered 
 | ALB | $0.61 | $18 |
 | VPC endpoints | $0.36 | $11 |
 | Route53 + ECR + S3 | $0.02 | $1 |
-| **Total** | **$7.00** | **$212** |
+| **Subtotal (pre-tax)** | **$7.00** | **$212** |
+| Tax (VAT EU-West-1) | $0.86 | $26 |
+| **Total** | **$7.86** | **$238** |
 
 > **Lesson learned:** EKS extended support pricing activates silently when the Kubernetes version falls out of its 14-month standard window. There is no Terraform warning, no AWS alert. Cost Explorer → filter by Usage Type `ExtendedSupport` is the only way to catch it. Always pin your K8s version and verify post-apply with `aws eks describe-cluster`.
 
